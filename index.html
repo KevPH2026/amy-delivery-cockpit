@@ -3,591 +3,1308 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>艾米交付驾驶舱</title>
+<title>艾米交付体系 · 战略驾驶舱 v2</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0a0e14;
-    --surface: #131820;
-    --surface2: #1a1f2b;
-    --border: #242b38;
-    --text: #c8ccd4;
-    --text-dim: #6c7280;
-    --accent: #58a6ff;
-    --accent-glow: rgba(88,166,255,0.15);
-    --green: #3fb950;
-    --green-glow: rgba(63,185,80,0.15);
-    --yellow: #d2991d;
-    --yellow-glow: rgba(210,153,29,0.15);
-    --red: #f85149;
-    --red-glow: rgba(248,81,73,0.15);
-    --purple: #a371f7;
+    --bg: #0b0e17;
+    --surface: #111520;
+    --surface2: #181d2a;
+    --surface3: #1f2537;
+    --border: #252d40;
+    --text: #c4ccd8;
+    --text-dim: #5a6478;
+    --text-bright: #e8ecf4;
+    --accent: #4f8ef7;
+    --accent-dim: rgba(79,142,247,0.15);
+    --green: #34c759;
+    --green-dim: rgba(52,199,89,0.15);
+    --yellow: #f5a623;
+    --yellow-dim: rgba(245,166,35,0.15);
+    --red: #ff453a;
+    --red-dim: rgba(255,69,58,0.15);
+    --purple: #af52de;
+    --purple-dim: rgba(175,82,222,0.15);
+    --cyan: #32d4de;
+    --cyan-dim: rgba(50,212,222,0.15);
     --radius: 10px;
+    --radius-sm: 6px;
     --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.5;
-  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
 
-  /* Header */
+  /* ─── Header ─── */
   .header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     padding: 0 24px;
     display: flex; align-items: center; justify-content: space-between;
-    height: 56px;
-    position: sticky; top: 0; z-index: 100;
+    height: 58px; position: sticky; top: 0; z-index: 100;
   }
+  .header-left { display: flex; align-items: center; gap: 12px; }
   .header-logo {
-    display: flex; align-items: center; gap: 10px;
-    font-weight: 700; font-size: 17px; letter-spacing: -0.3px;
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 700; font-size: 15px; letter-spacing: -0.3px; color: var(--text-bright);
   }
-  .header-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
-  .header-meta { font-size: 12px; color: var(--text-dim); display: flex; gap: 16px; align-items: center; }
-  .header-meta .live { color: var(--green); display: flex; align-items: center; gap: 5px; }
-  .header-meta .live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  .header-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+  .header-badge { background: var(--accent-dim); color: var(--accent); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.3px; }
+  .header-right { display: flex; align-items: center; gap: 20px; font-size: 12px; color: var(--text-dim); }
+  .header-right .live { color: var(--green); display: flex; align-items: center; gap: 5px; }
+  .header-right .live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-  /* Tabs */
-  .tabs {
+  /* ─── Nav Bar ─── */
+  .nav {
     display: flex; gap: 0;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     padding: 0 24px;
+    overflow-x: auto;
   }
-  .tab {
-    padding: 12px 20px;
-    font-size: 13px; font-weight: 500;
-    color: var(--text-dim);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all .2s;
-    letter-spacing: -0.2px;
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-item {
+    padding: 11px 18px; font-size: 13px; font-weight: 500;
+    color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent;
+    transition: all .2s; white-space: nowrap; letter-spacing: -0.2px;
   }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .nav-item:hover { color: var(--text); }
+  .nav-item.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .nav-item .count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 10px; font-weight: 700; margin-left: 5px; }
+  .count-red { background: var(--red); color: #fff; }
+  .count-yellow { background: var(--yellow); color: #000; }
+  .count-green { background: var(--green); color: #fff; }
 
-  /* Content */
-  .content { padding: 20px 24px; max-width: 1440px; margin: 0 auto; }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+  /* ─── Content ─── */
+  .content { padding: 20px 24px; max-width: 1520px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
 
-  /* KPI Cards */
-  .kpi-grid {
+  /* ─── KPI Row ─── */
+  .kpi-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 14px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px; margin-bottom: 18px;
   }
   .kpi-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px;
+    transition: border-color .2s;
   }
-  .kpi-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
-  .kpi-value { font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
-  .kpi-sub { font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 4px; }
-  .kpi-sub .up { color: var(--green); }
-  .kpi-sub .down { color: var(--red); }
-  .kpi-sub .warn { color: var(--yellow); }
+  .kpi-card:hover { border-color: var(--accent); }
+  .kpi-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+  .kpi-value { font-size: 30px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
+  .kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+  .kpi-sub .up { color: var(--green); font-weight: 600; }
+  .kpi-sub .warn { color: var(--yellow); font-weight: 600; }
+  .kpi-sub .danger { color: var(--red); font-weight: 600; }
 
-  /* Chart Grid */
-  .chart-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-    gap: 14px;
-    margin-bottom: 20px;
+  /* ─── Section Card ─── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; margin-bottom: 14px;
   }
-  .chart-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 20px;
+  .card-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
   }
-  .chart-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.2px; }
-  .chart-wrap { position: relative; width: 100%; height: 240px; }
-  .chart-wrap canvas { width: 100% !important; height: 100% !important; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text-bright); display: flex; align-items: center; gap: 7px; letter-spacing: -0.2px; }
+  .card-title .tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.2px; }
+  .tag-red { background: var(--red-dim); color: var(--red); }
+  .tag-yellow { background: var(--yellow-dim); color: var(--yellow); }
+  .tag-green { background: var(--green-dim); color: var(--green); }
+  .tag-blue { background: var(--accent-dim); color: var(--accent); }
+  .tag-purple { background: var(--purple-dim); color: var(--purple); }
+  .card-body { padding: 14px 18px; }
 
-  /* Table */
-  .table-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 20px;
-  }
-  .table-card .chart-title { padding: 18px 20px 0; }
-  table {
-    width: 100%; border-collapse: collapse; font-size: 13px;
-  }
-  th { text-align: left; padding: 10px 20px; color: var(--text-dim); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
-  td { padding: 12px 20px; border-bottom: 1px solid var(--border); }
-  tr:last-child td { border-bottom: none; }
+  /* ─── Grid layouts ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
 
-  /* Badges */
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-green { background: var(--green-glow); color: var(--green); }
-  .badge-yellow { background: var(--yellow-glow); color: var(--yellow); }
-  .badge-red { background: var(--red-glow); color: var(--red); }
-  .badge-blue { background: var(--accent-glow); color: var(--accent); }
+  /* ─── Progress Bar ─── */
+  .prog { width: 100%; height: 5px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin: 4px 0; }
+  .prog-fill { height: 100%; border-radius: 3px; }
+  .prog-fill.g { background: var(--green); }
+  .prog-fill.y { background: var(--yellow); }
+  .prog-fill.r { background: var(--red); }
+  .prog-fill.b { background: var(--accent); }
 
-  /* Progress */
-  .progress-bar {
-    width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px;
+  /* ─── Timeline (Gantt) ─── */
+  .timeline { position: relative; }
+  .timeline-item {
+    display: grid; grid-template-columns: 220px 1fr;
+    gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border);
+    align-items: center;
   }
-  .progress-fill { height: 100%; border-radius: 3px; transition: width .6s; }
-  .progress-fill.green { background: var(--green); }
-  .progress-fill.yellow { background: var(--yellow); }
-  .progress-fill.red { background: var(--red); }
-  .progress-fill.blue { background: var(--accent); }
+  .timeline-item:last-child { border-bottom: none; }
+  .tl-left .tl-name { font-size: 13px; font-weight: 600; color: var(--text-bright); }
+  .tl-left .tl-owner { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .tl-right { display: flex; flex-direction: column; gap: 4px; }
+  .tl-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .tl-bar {
+    height: 22px; border-radius: 4px; display: flex; align-items: center;
+    font-size: 11px; font-weight: 600; padding: 0 10px; color: #fff; min-width: 80px;
+    white-space: nowrap; position: relative; overflow: hidden;
+  }
+  .tl-bar.green { background: linear-gradient(90deg, var(--green), #2da44e); }
+  .tl-bar.blue { background: linear-gradient(90deg, var(--accent), #3d7be0); }
+  .tl-bar.yellow { background: linear-gradient(90deg, var(--yellow), #d4940a); }
+  .tl-bar.red { background: linear-gradient(90deg, var(--red), #d93030); }
+  .tl-bar.gray { background: var(--surface3); color: var(--text-dim); }
+  .tl-meta { font-size: 11px; color: var(--text-dim); display: flex; gap: 12px; }
 
-  /* Alert Log */
+  /* Milestone */
+  .milestone-row { display: flex; gap: 0; margin-top: 10px; padding: 0 220px 0 0; position: relative; }
+  .milestone-row::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--border); transform: translateY(-50%); z-index: 0; }
+  .milestone { display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 1; flex: 1; }
+  .milestone-dot { width: 14px; height: 14px; border-radius: 50%; border: 3px solid; }
+  .milestone-dot.done { border-color: var(--green); background: var(--green); }
+  .milestone-dot.active { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 0 4px var(--accent-dim); }
+  .milestone-dot.pending { border-color: var(--border); background: var(--surface); }
+  .milestone-label { font-size: 10px; color: var(--text-dim); text-align: center; max-width: 70px; }
+
+  /* ─── Task List ─── */
+  .task-item {
+    display: grid; grid-template-columns: 1fr auto auto auto;
+    gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border);
+    align-items: center; font-size: 13px;
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-text .task-name { color: var(--text-bright); font-weight: 500; }
+  .task-text .task-meta { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .task-status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 12px; }
+  .status-done { background: var(--green-dim); color: var(--green); }
+  .status-active { background: var(--accent-dim); color: var(--accent); }
+  .status-blocked { background: var(--red-dim); color: var(--red); }
+  .status-pending { background: var(--surface3); color: var(--text-dim); }
+  .task-date { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+  .task-priority { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .p-high { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .p-med { background: var(--yellow); }
+  .p-low { background: var(--text-dim); }
+
+  /* ─── Alert ─── */
   .alert-item {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 12px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid var(--border);
   }
   .alert-item:last-child { border-bottom: none; }
-  .alert-icon {
-    width: 28px; height: 28px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; flex-shrink: 0;
-  }
-  .alert-icon.critical { background: var(--red-glow); color: var(--red); }
-  .alert-icon.warning { background: var(--yellow-glow); color: var(--yellow); }
-  .alert-icon.info { background: var(--accent-glow); color: var(--accent); }
+  .alert-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .alert-icon.critical { background: var(--red-dim); color: var(--red); }
+  .alert-icon.warning { background: var(--yellow-dim); color: var(--yellow); }
+  .alert-icon.info { background: var(--accent-dim); color: var(--accent); }
+  .alert-icon.success { background: var(--green-dim); color: var(--green); }
   .alert-body { flex: 1; }
-  .alert-title { font-size: 13px; font-weight: 600; }
+  .alert-title { font-size: 13px; font-weight: 600; color: var(--text-bright); }
   .alert-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-  .alert-time { font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+  .alert-meta { display: flex; gap: 12px; margin-top: 4px; font-size: 11px; color: var(--text-dim); }
 
-  /* Status dot */
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-  .status-dot.online { background: var(--green); }
-  .status-dot.warn { background: var(--yellow); }
-  .status-dot.offline { background: var(--red); }
-
-  /* Section header */
-  .section-title {
-    font-size: 14px; font-weight: 700; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px; letter-spacing: -0.2px;
+  /* ─── Score Card ─── */
+  .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .score-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
   }
-  .section-title .count { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+  .score-card .sc-name { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; font-weight: 500; }
+  .score-card .sc-score { font-size: 36px; font-weight: 700; letter-spacing: -1px; }
+  .score-card .sc-bar { margin-top: 8px; }
+  .score-card .sc-meta { font-size: 11px; color: var(--text-dim); margin-top: 4px; display: flex; justify-content: space-between; }
 
-  /* Responsive */
+  /* ─── Decision Log ─── */
+  .decision-item {
+    display: grid; grid-template-columns: 80px 1fr auto;
+    gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border);
+    align-items: start; font-size: 13px;
+  }
+  .decision-item:last-child { border-bottom: none; }
+  .decision-date { font-size: 11px; color: var(--text-dim); padding-top: 2px; }
+  .decision-text { color: var(--text-bright); }
+  .decision-text .d-title { font-weight: 600; }
+  .decision-text .d-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .decision-owner { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+
+  /* ─── Next Action Banner ─── */
+  .next-action {
+    background: linear-gradient(135deg, var(--surface2), var(--surface3));
+    border: 1px solid var(--accent); border-radius: var(--radius);
+    padding: 16px 20px; display: flex; align-items: center; gap: 16px;
+    margin-bottom: 18px;
+  }
+  .next-action .na-icon { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .next-action .na-content { flex: 1; }
+  .next-action .na-label { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+  .next-action .na-title { font-size: 15px; font-weight: 700; color: var(--text-bright); margin-top: 2px; }
+  .next-action .na-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .next-action .na-btn { background: var(--accent); color: #fff; border: none; padding: 8px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+  .next-action .na-btn:hover { opacity: .9; }
+
+  /* ─── Chart wrapper ─── */
+  .chart-wrap { position: relative; height: 220px; }
+  .chart-wrap canvas { width: 100% !important; height: 100% !important; }
+  .chart-wrap-sm { height: 160px; }
+
+  /* ─── CS Health table ─── */
+  .cs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .cs-table th { text-align: left; padding: 8px 12px; color: var(--text-dim); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
+  .cs-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .cs-table tr:last-child td { border-bottom: none; }
+  .cs-table .health-bar { width: 80px; height: 4px; background: var(--surface3); border-radius: 2px; }
+  .cs-table .health-fill { height: 100%; border-radius: 2px; }
+
+  /* ─── Tabs inside card ─── */
+  .sub-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 18px; }
+  .sub-tab { padding: 10px 16px; font-size: 12px; font-weight: 500; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; }
+  .sub-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .sub-panel { display: none; }
+  .sub-panel.active { display: block; }
+
+  /* ─── Responsive ─── */
   @media (max-width: 768px) {
     .content { padding: 12px; }
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-    .chart-grid { grid-template-columns: 1fr; }
-    .tabs {overflow-x: auto; padding: 0 12px;}
-    .tab { padding: 12px 14px; font-size: 12px; white-space: nowrap; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .timeline-item { grid-template-columns: 1fr; gap: 6px; }
+    .milestone-row { padding: 0; }
+    .task-item { grid-template-columns: 1fr auto; gap: 8px; }
   }
 </style>
 </head>
 <body>
 
+<!-- ─── HEADER ─── -->
 <div class="header">
-  <div class="header-logo">
-    <span class="dot"></span> 艾米交付驾驶舱
+  <div class="header-left">
+    <div class="header-logo">
+      <span class="dot"></span>
+      艾米交付体系 · 战略驾驶舱
+    </div>
+    <span class="header-badge">v2.0</span>
   </div>
-  <div class="header-meta">
-    <span class="live">系统运行中</span>
-    <span>数据更新：<span id="updateTime">--</span></span>
-    <span>v1.0</span>
+  <div class="header-right">
+    <span class="live">运行中</span>
+    <span id="curTime">--:--</span>
+    <span>数据版本：<span id="dataVer">示例数据</span></span>
   </div>
 </div>
 
-<div class="tabs">
-  <div class="tab active" data-tab="overview">总览</div>
-  <div class="tab" data-tab="cs">客户成功</div>
-  <div class="tab" data-tab="outsource">外包管理</div>
-  <div class="tab" data-tab="cert">认证体系</div>
-  <div class="tab" data-tab="alert">异常中心</div>
+<!-- ─── NAV ─── -->
+<div class="nav">
+  <div class="nav-item active" data-panel="pulse">🚀 指挥官总览</div>
+  <div class="nav-item" data-panel="roadmap">📅 实施路线图</div>
+  <div class="nav-item" data-panel="tasks">📋 任务中心</div>
+  <div class="nav-item" data-panel="cs">💎 客户成功</div>
+  <div class="nav-item" data-panel="outsource">🔧 外包管理</div>
+  <div class="nav-item" data-panel="cert">🎓 认证体系</div>
+  <div class="nav-item" data-panel="decisions">⚖️ 决策日志</div>
+  <div class="nav-item" data-panel="alerts">🚨 异常中心 <span class="count count-red">3</span></div>
 </div>
 
 <div class="content">
 
-  <!-- ===== 总览 ===== -->
-  <div class="tab-panel active" id="panel-overview">
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">服务客户总数</div>
-        <div class="kpi-value" style="color:var(--accent)">247</div>
-        <div class="kpi-sub"><span class="up">↑ 12</span> 本月新增</div>
+<!-- ════════════════════════════════════════
+     PANEL 1: 指挥官总览
+════════════════════════════════════════ -->
+<div class="panel active" id="p-panel">
+
+  <!-- Next Action Banner -->
+  <div class="next-action">
+    <div class="na-icon">👉</div>
+    <div class="na-content">
+      <div class="na-label">下一步关键动作</div>
+      <div class="na-title">完成《外包SOP文档 v1.0》初稿</div>
+      <div class="na-meta">负责人：K · 截止：本周五 · 状态：进行中</div>
+    </div>
+    <button class="na-btn">更新状态 →</button>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">交付体系整体进度</div>
+      <div class="kpi-value" style="color:var(--accent)">42%</div>
+      <div class="prog"><div class="prog-fill b" style="width:42%"></div></div>
+      <div class="kpi-sub">6大工作流 · 2项已完成</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">服务客户总数</div>
+      <div class="kpi-value" style="color:var(--text-bright)">247</div>
+      <div class="kpi-sub"><span class="up">+12</span> 本月新增</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">客户健康分均值</div>
+      <div class="kpi-value" style="color:var(--green)">84</div>
+      <div class="kpi-sub"><span class="up">↑3</span> vs 上月</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">外包产能利用率</div>
+      <div class="kpi-value" style="color:var(--yellow)">76%</div>
+      <div class="kpi-sub">警戒线 85%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">本月续费率</div>
+      <div class="kpi-value" style="color:var(--green)">91%</div>
+      <div class="kpi-sub"><span class="up">↑4%</span> vs 上月</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">待处理异常</div>
+      <div class="kpi-value" style="color:var(--red)">3</div>
+      <div class="kpi-sub"><span class="danger">需关注</span></div>
+    </div>
+  </div>
+
+  <!-- Main charts -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📊 整体进度趋势</div>
+        <span class="tag tag-blue">近6个月</span>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">客户健康分均值</div>
-        <div class="kpi-value" style="color:var(--green)">84</div>
-        <div class="kpi-sub"><span class="up">↑ 3</span> vs 上月</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">外包产能利用率</div>
-        <div class="kpi-value" style="color:var(--yellow)">76%</div>
-        <div class="kpi-sub">警戒线 85%</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">本月待处理异常</div>
-        <div class="kpi-value" style="color:var(--red)">3</div>
-        <div class="kpi-sub"><span class="down">需关注</span></div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="c1"></canvas></div>
       </div>
     </div>
-
-    <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-title">客户增长趋势（近6个月）</div>
-        <div class="chart-wrap"><canvas id="chartCustomerTrend"></canvas></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🏆 里程碑追踪</div>
+        <span class="tag tag-green">6月目标</span>
       </div>
-      <div class="chart-card">
-        <div class="chart-title">交付质量概览</div>
-        <div class="chart-wrap"><canvas id="chartQuality"></canvas></div>
+      <div class="card-body">
+        <div class="milestone-row" id="milestoneRow"></div>
       </div>
     </div>
+  </div>
 
-    <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-title">本周异常摘要</div>
-        <div style="margin-top:8px">
-          <div class="alert-item">
-            <div class="alert-icon warning">⚠</div>
-            <div class="alert-body"><div class="alert-title">长沙外包质检分下降</div><div class="alert-desc">本周抽样合格率降至78%，触发关注线</div></div>
-            <div class="alert-time">5/27</div>
+  <!-- Sub-grid -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🚨 最新异常</div>
+        <span class="tag tag-red">3项待处理</span>
+      </div>
+      <div class="card-body">
+        <div class="alert-item">
+          <div class="alert-icon critical">!</div>
+          <div class="alert-body">
+            <div class="alert-title">长沙外包质检分降至78%</div>
+            <div class="alert-desc">触发关注线（&lt;80%），本周抽检12个工单，3个不合格</div>
+            <div class="alert-meta"><span>📍 长沙外包A组</span><span>🕐 5月27日</span><span>👤 待CS负责人跟进</span></div>
           </div>
-          <div class="alert-item">
-            <div class="alert-icon critical">!</div>
-            <div class="alert-body"><div class="alert-title">客户健康分危险 — 深圳XX科技</div><div class="alert-desc">健康分跌至52，CS已介入</div></div>
-            <div class="alert-time">5/26</div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon warning">⚠</div>
+          <div class="alert-body">
+            <div class="alert-title">深圳XX科技健康分危险（52分）</div>
+            <div class="alert-desc">连续2周下降，CS已介入，3日内需完成客户沟通</div>
+            <div class="alert-meta"><span>📍 客户成功</span><span>🕐 5月26日</span><span>👤 CS-李明</span></div>
           </div>
-          <div class="alert-item">
-            <div class="alert-icon info">i</div>
-            <div class="alert-body"><div class="alert-title">渠道首批10个客户分配完成</div><div class="alert-desc">已路由至北京外包A组</div></div>
-            <div class="alert-time">5/25</div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon info">i</div>
+          <div class="alert-body">
+            <div class="alert-title">渠道首批10个客户已分配交付</div>
+            <div class="alert-desc">已路由至北京外包A组，正常推进中</div>
+            <div class="alert-meta"><span>📍 渠道合作</span><span>🕐 5月25日</span></div>
           </div>
         </div>
       </div>
-      <div class="chart-card">
-        <div class="chart-title">客户分级分布</div>
-        <div class="chart-wrap"><canvas id="chartTiers"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🎯 6月里程碑预览</div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-bright)">SOP文档v1.0完成</div>
+              <div style="font-size:11px;color:var(--text-dim)">外包交付标准体系化</div>
+            </div>
+            <span class="tag tag-green">已完成</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-bright)">CS中台3人到位</div>
+              <div style="font-size:11px;color:var(--text-dim)">负责人+外包管理+产品反馈</div>
+            </div>
+            <span class="tag tag-yellow">进行中</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-bright)">质检体系上线</div>
+              <div style="font-size:11px;color:var(--text-dim)">自动化抽检 + 评分系统</div>
+            </div>
+            <span class="tag tag-blue">待启动</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-bright)">渠道认证培训第一期</div>
+              <div style="font-size:11px;color:var(--text-dim)">集团子公司交付人员认证</div>
+            </div>
+            <span class="tag tag-blue">待启动</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text-bright)">试点客户100家</div>
+              <div style="font-size:11px;color:var(--text-dim)">全流程跑通验证</div>
+            </div>
+            <span class="tag tag-blue">待启动</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- ===== 客户成功 ===== -->
-  <div class="tab-panel" id="panel-cs">
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">健康客户</div>
-        <div class="kpi-value" style="color:var(--green)">189</div>
-        <div class="kpi-sub">76% · 健康分≥80</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">关注客户</div>
-        <div class="kpi-value" style="color:var(--yellow)">47</div>
-        <div class="kpi-sub">19% · 健康分60-79</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">危险客户</div>
-        <div class="kpi-value" style="color:var(--red)">11</div>
-        <div class="kpi-sub">5% · 健康分&lt;60</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">本月续费率</div>
-        <div class="kpi-value" style="color:var(--accent)">91%</div>
-        <div class="kpi-sub"><span class="up">↑ 4%</span> vs 上月</div>
-      </div>
-    </div>
-    <div class="table-card">
-      <div class="chart-title">⚠ 需要关注的客户</div>
-      <table>
-        <thead><tr><th>客户</th><th>健康分</th><th>趋势</th><th>问题</th><th>负责人</th><th>行动</th></tr></thead>
-        <tbody>
-          <tr><td>深圳XX科技</td><td><span class="badge badge-red">52</span></td><td>↓ 18</td><td>ROI连续3周未达标</td><td>张明</td><td>本周QBR</td></tr>
-          <tr><td>杭州YY电商</td><td><span class="badge badge-yellow">61</span></td><td>↓ 8</td><td>产品使用频次下降</td><td>李婷</td><td>主动联系</td></tr>
-          <tr><td>广州ZZ贸易</td><td><span class="badge badge-yellow">58</span></td><td>↓ 12</td><td>客户侧人员变动</td><td>张明</td><td>重新Onboarding</td></tr>
-          <tr><td>成都AA跨境</td><td><span class="badge badge-yellow">65</span></td><td>→</td><td>素材审核多次不通过</td><td>王磊</td><td>素材培训</td></tr>
-          <tr><td>武汉BB科技</td><td><span class="badge badge-red">44</span></td><td>↓ 22</td><td>未使用产品超2周</td><td>李婷</td><td>挽留SOP</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ===== 外包管理 ===== -->
-  <div class="tab-panel" id="panel-outsource">
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">总产能</div>
-        <div class="kpi-value" style="color:var(--accent)">180</div>
-        <div class="kpi-sub">客户/月</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">当前分配</div>
-        <div class="kpi-value" style="color:var(--yellow)">137</div>
-        <div class="kpi-sub">利用率 76%</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">本月质检合格率</div>
-        <div class="kpi-value" style="color:var(--green)">87%</div>
-        <div class="kpi-sub"><span class="warn">↓ 2%</span> vs 上月</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">飞行检查</div>
-        <div class="kpi-value">0</div>
-        <div class="kpi-sub">本月重大事故</div>
-      </div>
-    </div>
-
-    <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-title">外包商品质对比</div>
-        <div class="chart-wrap"><canvas id="chartVendor"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">产能使用趋势</div>
-        <div class="chart-wrap"><canvas id="chartCapacity"></canvas></div>
-      </div>
-    </div>
-
-    <div class="table-card">
-      <div class="chart-title">外包商状态</div>
-      <table>
-        <thead><tr><th>外包商</th><th>等级</th><th>总产能</th><th>已分配</th><th>利用率</th><th>质检分</th><th>状态</th></tr></thead>
-        <tbody>
-          <tr><td><span class="status-dot online"></span>北京艾迪</td><td><span class="badge badge-green">S</span></td><td>100</td><td>78</td><td>78%<div class="progress-bar"><div class="progress-fill blue" style="width:78%"></div></div></td><td>92</td><td><span class="badge badge-green">正常</span></td></tr>
-          <tr><td><span class="status-dot warn"></span>长沙网拓</td><td><span class="badge badge-yellow">A</span></td><td>80</td><td>59</td><td>74%<div class="progress-bar"><div class="progress-fill blue" style="width:74%"></div></div></td><td>78</td><td><span class="badge badge-yellow">关注</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ===== 认证体系 ===== -->
-  <div class="tab-panel" id="panel-cert">
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">累计持证人数</div>
-        <div class="kpi-value" style="color:var(--accent)">38</div>
-        <div class="kpi-sub"><span class="up">↑ 6</span> 本月新增</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">认证通过率</div>
-        <div class="kpi-value" style="color:var(--green)">72%</div>
-        <div class="kpi-sub">本年度累计</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">待年审</div>
-        <div class="kpi-value" style="color:var(--yellow)">12</div>
-        <div class="kpi-sub">3个月内到期</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">渠道认证申请</div>
-        <div class="kpi-value" style="color:var(--purple)">24</div>
-        <div class="kpi-sub">集团渠道待培训</div>
-      </div>
-    </div>
-
-    <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-title">认证层级分布</div>
-        <div class="chart-wrap"><canvas id="chartCertLevel"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">认证增长趋势</div>
-        <div class="chart-wrap"><canvas id="chartCertTrend"></canvas></div>
-      </div>
-    </div>
-
-    <div class="table-card">
-      <div class="chart-title">渠道认证进度</div>
-      <table>
-        <thead><tr><th>渠道方</th><th>报名</th><th>培训中</th><th>已考试</th><th>持证</th><th>进度</th></tr></thead>
-        <tbody>
-          <tr><td>集团华南区</td><td>12</td><td>8</td><td>4</td><td>3</td><td><div class="progress-bar"><div class="progress-fill green" style="width:25%"></div></div><span style="font-size:11px;color:var(--text-dim)">25%</span></td></tr>
-          <tr><td>集团华东区</td><td>8</td><td>5</td><td>3</td><td>2</td><td><div class="progress-bar"><div class="progress-fill blue" style="width:25%"></div></div><span style="font-size:11px;color:var(--text-dim)">25%</span></td></tr>
-          <tr><td>集团华北区</td><td>4</td><td>4</td><td>0</td><td>0</td><td><div class="progress-bar"><div class="progress-fill yellow" style="width:0%"></div></div><span style="font-size:11px;color:var(--text-dim)">0%</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ===== 异常中心 ===== -->
-  <div class="tab-panel" id="panel-alert">
-    <div class="kpi-grid">
-      <div class="kpi-card" style="border-color:var(--red)">
-        <div class="kpi-label">严重</div>
-        <div class="kpi-value" style="color:var(--red)">1</div>
-        <div class="kpi-sub">需立即处理</div>
-      </div>
-      <div class="kpi-card" style="border-color:var(--yellow)">
-        <div class="kpi-label">警告</div>
-        <div class="kpi-value" style="color:var(--yellow)">3</div>
-        <div class="kpi-sub">24h内处理</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">本月已关闭</div>
-        <div class="kpi-value" style="color:var(--green)">17</div>
-        <div class="kpi-sub">平均响应 3.2h</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">重复异常率</div>
-        <div class="kpi-value" style="color:var(--accent)">6%</div>
-        <div class="kpi-sub"><span class="up">↓ 2%</span> 趋势向好</div>
-      </div>
-    </div>
-
-    <div class="table-card">
-      <div class="chart-title">全部异常记录</div>
-      <table>
-        <thead><tr><th>级别</th><th>时间</th><th>来源</th><th>描述</th><th>状态</th><th>负责人</th></tr></thead>
-        <tbody>
-          <tr><td><span class="badge badge-red">严重</span></td><td>5/26 14:30</td><td>客户成功</td><td>深圳XX科技 健康分52 流失预警</td><td><span class="badge badge-red">处理中</span></td><td>张明</td></tr>
-          <tr><td><span class="badge badge-yellow">警告</span></td><td>5/27 09:15</td><td>质检</td><td>长沙外包 质检合格率跌至78%</td><td><span class="badge badge-yellow">处理中</span></td><td>王磊</td></tr>
-          <tr><td><span class="badge badge-yellow">警告</span></td><td>5/25 16:00</td><td>产能</td><td>北京外包利用率达85% 触发预警</td><td><span class="badge badge-green">已关闭</span></td><td>王磊</td></tr>
-          <tr><td><span class="badge badge-yellow">警告</span></td><td>5/24 11:20</td><td>客户成功</td><td>武汉BB科技 14天未登录产品</td><td><span class="badge badge-red">处理中</span></td><td>李婷</td></tr>
-          <tr><td><span class="badge badge-red">严重</span></td><td>5/22 08:45</td><td>品质</td><td>北京外包 广告误操作导致客户损失</td><td><span class="badge badge-green">已关闭</span></td><td>张明</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
 </div>
 
+<!-- ════════════════════════════════════════
+     PANEL 2: 实施路线图
+════════════════════════════════════════ -->
+<div class="panel" id="roadmap-panel">
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">总任务数</div>
+      <div class="kpi-value" style="color:var(--accent)">24</div>
+      <div class="kpi-sub">6大工作流</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">已完成</div>
+      <div class="kpi-value" style="color:var(--green)">6</div>
+      <div class="kpi-sub"><span class="up">25%</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">进行中</div>
+      <div class="kpi-value" style="color:var(--yellow)">8</div>
+      <div class="kpi-sub">关键路径</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">已阻塞</div>
+      <div class="kpi-value" style="color:var(--red)">2</div>
+      <div class="kpi-sub">需立即处理</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-header">
+      <div class="card-title">📅 6大工作流时间线</div>
+      <span class="tag tag-blue">Q2 2026</span>
+    </div>
+    <div class="card-body">
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🎯 6月关键里程碑</div>
+      </div>
+      <div class="card-body">
+        <div class="milestone-row" style="padding:0;margin:0">
+          <div class="milestone">
+            <div class="milestone-dot done"></div>
+            <div class="milestone-label">方案锁定</div>
+            <div style="font-size:10px;color:var(--green);margin-top:2px">5/28</div>
+          </div>
+          <div class="milestone">
+            <div class="milestone-dot active"></div>
+            <div class="milestone-label">SOP完成</div>
+            <div style="font-size:10px;color:var(--accent);margin-top:2px">6/6</div>
+          </div>
+          <div class="milestone">
+            <div class="milestone-dot pending"></div>
+            <div class="milestone-label">CS中台就位</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">6/13</div>
+          </div>
+          <div class="milestone">
+            <div class="milestone-dot pending"></div>
+            <div class="milestone-label">质检上线</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">6/20</div>
+          </div>
+          <div class="milestone">
+            <div class="milestone-dot pending"></div>
+            <div class="milestone-label">试点启动</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">6/27</div>
+          </div>
+          <div class="milestone">
+            <div class="milestone-dot pending"></div>
+            <div class="milestone-label">渠道培训</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">7/4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">⚠️ 风险与依赖</div>
+      </div>
+      <div class="card-body">
+        <div class="alert-item">
+          <div class="alert-icon warning">⚠</div>
+          <div class="alert-body">
+            <div class="alert-title">CS负责人招聘可能超期</div>
+            <div class="alert-desc">期望6/13到位，JD已发，预计筛选周期2-3周，有3-5天风险</div>
+            <div class="alert-meta"><span>📍 人才招聘</span><span>影响：CS中台搭建</span></div>
+          </div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon warning">⚠</div>
+          <div class="alert-body">
+            <div class="alert-title">长沙外包质量不稳定</div>
+            <div class="alert-desc">本周质检分降至78%，需在SOP完成前完成一轮整改沟通</div>
+            <div class="alert-meta"><span>📍 外包管理</span><span>影响：渠道客户交付质量</span></div>
+          </div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon info">i</div>
+          <div class="alert-body">
+            <div class="alert-title">渠道客户量超预期</div>
+            <div class="alert-desc">集团子公司首批10个客户已进，已在评估是否需要紧急扩容第三家外包商</div>
+            <div class="alert-meta"><span>📍 产能规划</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PANEL 3: 任务中心
+════════════════════════════════════════ -->
+<div class="panel" id="tasks-panel">
+  <div class="sub-tabs">
+    <div class="sub-tab active" data-sub="all">全部 <span class="count count-blue">18</span></div>
+    <div class="sub-tab" data-sub="mine">我的任务 <span class="count count-blue">5</span></div>
+    <div class="sub-tab" data-sub="blocked">已阻塞 <span class="count count-red">2</span></div>
+    <div class="sub-tab" data-sub="done">已完成</div>
+  </div>
+  <div style="padding:14px 18px">
+    <div class="sub-panel active" id="sub-all">
+      <div class="task-item" style="font-weight:700;color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:6px 0">
+        <div>任务名称</div><div>状态</div><div>截止</div><div>负责人</div>
+      </div>
+      <div class="task-item">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="task-priority p-high"></div>
+          <div class="task-text"><div class="task-name">完成外包SOP文档 v1.0初稿</div><div class="task-meta">📍 CS中台搭建 · 第一步</div></div>
+        </div>
+        <div><span class="task-status status-active">● 进行中</span></div>
+        <div class="task-date">5月30日</div>
+        <div style="font-size:12px;color:var(--text-dim)">K</div>
+      </div>
+      <div class="task-item">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="task-priority p-high"></div>
+          <div class="task-text"><div class="task-name">完成质检体系设计方案</div><div class="task-meta">📍 质检体系 · 核心抓手</div></div>
+        </div>
+        <div><span class="task-status status-active">● 进行中</span></div>
+        <div class="task-date">6月3日</div>
+        <div style="font-size:12px;color:var(--text-dim)">K</div>
+      </div>
+      <div class="task-item">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="task-priority p-med"></div>
+          <div class="task-text"><div class="task-name">与长沙外包负责人完成整改沟通</div><div class="task-meta">📍 外包管理 · 紧急</div></div>
+        </div>
+        <div><span class="task-status status-blocked">✕ 已阻塞</span></div>
+        <div class="task-date">5月29日 ⚠️</div>
+        <div style="font-size:12px;color:var(--text-dim)">K</div>
+      </div>
+      <div class="task-item">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="task-priority p-med"></div>
+          <div class="task-text"><div class="task-name">确定CS负责人JD并发起招聘</div><div class="task-meta">📍 CS中台搭建 · 关键路径</div></div>
+        </div>
+        <div><span class="task-status status-done">✓ 已完成</span></div>
+        <div class="task-date">5月27日</div>
+        <div style="font-size:12px;color:var(--text-dim)">K</div>
+      </div>
+      <div class="task-item">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="task-priority p-med"></div>
+          <div class="task-text"><div class="task-name">与老板对齐「供应链操盘手」定位</div><div class="task-meta">📍 战略对齐 · 已完成</div></div>
+        </div>
+        <div><span class="task-status status-done">✓ 已完成</span></div>
+        <div class="task-date">5月28日</div>
+        <div style="font-size:12px;color:var(--text-dim)">K</div>
+      </div>
+      <div class="task-item">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="task-priority p-low"></div>
+          <div class="task-text"><div class="task-name">评估第三家外包商（备选：广州/深圳）</div><div class="task-meta">📍 外包生态 · 产能扩容</div></div>
+        </div>
+        <div><span class="task-status status-pending">○ 待启动</span></div>
+        <div class="task-date">6月10日</div>
+        <div style="font-size:12px;color:var(--text-dim)">待分配</div>
+      </div>
+      <div class="task-item">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="task-priority p-low"></div>
+          <div class="task-text"><div class="task-name">建立外包商评分卡（产能/质量/响应/配合）</div><div class="task-meta">📍 外包管理 · 核心抓手</div></div>
+        </div>
+        <div><span class="task-status status-pending">○ 待启动</span></div>
+        <div class="task-date">6月6日</div>
+        <div style="font-size:12px;color:var(--text-dim)">待分配</div>
+      </div>
+      <div class="task-item">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="task-priority p-low"></div>
+          <div class="task-text"><div class="task-name">渠道认证体系设计（含考核标准）</div><div class="task-meta">📍 认证体系 · 战略差异化</div></div>
+        </div>
+        <div><span class="task-status status-pending">○ 待启动</span></div>
+        <div class="task-date">6月15日</div>
+        <div style="font-size:12px;color:var(--text-dim)">待分配</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PANEL 4: 客户成功
+════════════════════════════════════════ -->
+<div class="panel" id="cs-panel">
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">健康客户</div>
+      <div class="kpi-value" style="color:var(--green)">189</div>
+      <div class="kpi-sub">76% · ≥80分</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">关注客户</div>
+      <div class="kpi-value" style="color:var(--yellow)">47</div>
+      <div class="kpi-sub">19% · 60-79分</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">危险客户</div>
+      <div class="kpi-value" style="color:var(--red)">11</div>
+      <div class="kpi-sub">5% · &lt;60分</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">本月续费率</div>
+      <div class="kpi-value" style="color:var(--green)">91%</div>
+      <div class="kpi-sub"><span class="up">+4%</span> vs 上月</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🚨 危险客户清单</div>
+        <span class="tag tag-red">需立即介入</span>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table class="cs-table">
+          <thead>
+            <tr>
+              <th>客户名称</th><th>健康分</th><th>趋势</th><th>负责人</th><th>介入时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>深圳XX科技</td>
+              <td><span style="color:var(--red);font-weight:700">52</span></td>
+              <td><span style="color:var(--red)">↓ 8</span></td>
+              <td>CS-李明</td>
+              <td>3日内</td>
+            </tr>
+            <tr>
+              <td>杭州XX服饰</td>
+              <td><span style="color:var(--red);font-weight:700">58</span></td>
+              <td><span style="color:var(--yellow)">↓ 3</span></td>
+              <td>CS-待分配</td>
+              <td>本周</td>
+            </tr>
+            <tr>
+              <td>南京XX电商</td>
+              <td><span style="color:var(--yellow);font-weight:700">64</span></td>
+              <td><span style="color:var(--yellow)">↓ 5</span></td>
+              <td>CS-王芳</td>
+              <td>本周</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📈 客户健康分分布</div>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap chart-wrap-sm"><canvas id="cHealth"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 客户健康分明细</div>
+      <span class="tag tag-blue">全部客户</span>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table class="cs-table">
+        <thead>
+          <tr>
+            <th>客户</th><th>健康分</th><th>趋势</th><th>最近活动</th><th>续约时间</th><th>增购信号</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>上海XX品牌</td>
+            <td><span style="color:var(--green);font-weight:700">96</span></td>
+            <td><span style="color:var(--green)">↑ 2</span></td>
+            <td>5/27 QBR完成</td>
+            <td>8月到期</td>
+            <td><span class="tag tag-green" style="font-size:10px">强</span></td>
+          </tr>
+          <tr>
+            <td>北京XX科技</td>
+            <td><span style="color:var(--green);font-weight:700">88</span></td>
+            <td><span style="color:var(--green)">↑ 1</span></td>
+            <td>5/25 策略review</td>
+            <td>9月到期</td>
+            <td><span class="tag tag-blue" style="font-size:10px">中</span></td>
+          </tr>
+          <tr>
+            <td>广州XX贸易</td>
+            <td><span style="color:var(--yellow);font-weight:700">72</span></td>
+            <td><span style="color:var(--yellow)">↓ 4</span></td>
+            <td>5/20 策略调整</td>
+            <td>7月到期</td>
+            <td><span class="tag tag-yellow" style="font-size:10px">待观察</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PANEL 5: 外包管理
+════════════════════════════════════════ -->
+<div class="panel" id="outsource-panel">
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">外包商总数</div>
+      <div class="kpi-value" style="color:var(--accent)">2</div>
+      <div class="kpi-sub">+1 待评估</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">总产能利用率</div>
+      <div class="kpi-value" style="color:var(--yellow)">76%</div>
+      <div class="kpi-sub">警戒线 85%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">本月交付工单</div>
+      <div class="kpi-value" style="color:var(--text-bright)">183</div>
+      <div class="kpi-sub"><span class="up">+23</span> vs 上月</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">平均质检分</div>
+      <div class="kpi-value" style="color:var(--yellow)">81%</div>
+      <div class="kpi-sub"><span class="warn">↓2%</span> vs 上月</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🏭 北京外包A组</div>
+        <span class="tag tag-green">良好</span>
+      </div>
+      <div class="card-body">
+        <div class="score-grid" style="margin-bottom:14px">
+          <div class="score-card">
+            <div class="sc-name">产能得分</div>
+            <div class="sc-score" style="color:var(--green)">88</div>
+            <div class="sc-bar"><div class="prog"><div class="prog-fill g" style="width:88%"></div></div></div>
+            <div class="sc-meta"><span>可承接量：充足</span></div>
+          </div>
+          <div class="score-card">
+            <div class="sc-name">质量得分</div>
+            <div class="sc-score" style="color:var(--green)">85</div>
+            <div class="sc-bar"><div class="prog"><div class="prog-fill g" style="width:85%"></div></div></div>
+            <div class="sc-meta"><span>本月抽检：100%合格</span></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+          <div style="background:var(--surface2);padding:10px;border-radius:6px">
+            <div style="color:var(--text-dim)">响应速度</div>
+            <div style="color:var(--green);font-weight:700;font-size:16px;margin-top:2px">优</div>
+          </div>
+          <div style="background:var(--surface2);padding:10px;border-radius:6px">
+            <div style="color:var(--text-dim)">配合度</div>
+            <div style="color:var(--green);font-weight:700;font-size:16px;margin-top:2px">优</div>
+          </div>
+          <div style="background:var(--surface2);padding:10px;border-radius:6px">
+            <div style="color:var(--text-dim)">当前工单</div>
+            <div style="color:var(--text-bright);font-weight:700;font-size:16px;margin-top:2px">42</div>
+          </div>
+          <div style="background:var(--surface2);padding:10px;border-radius:6px">
+            <div style="color:var(--text-dim)">月均可交付</div>
+            <div style="color:var(--text-bright);font-weight:700;font-size:16px;margin-top:2px">80单</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🏭 长沙外包B组</div>
+        <span class="tag tag-yellow">⚠ 关注</span>
+      </div>
+      <div class="card-body">
+        <div class="score-grid" style="margin-bottom:14px">
+          <div class="score-card">
+            <div class="sc-name">产能得分</div>
+            <div class="sc-score" style="color:var(--yellow)">72</div>
+            <div class="sc-bar"><div class="prog"><div class="prog-fill y" style="width:72%"></div></div></div>
+            <div class="sc-meta"><span>可承接量：紧张</span></div>
+          </div>
+          <div class="score-card">
+            <div class="sc-name">质量得分</div>
+            <div class="sc-score" style="color:var(--red)">78</div>
+            <div class="sc-bar"><div class="prog"><div class="prog-fill r" style="width:78%"></div></div></div>
+            <div class="sc-meta"><span>⚠ 低于80%警戒线</span></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+          <div style="background:var(--surface2);padding:10px;border-radius:6px">
+            <div style="color:var(--text-dim)">响应速度</div>
+            <div style="color:var(--yellow);font-weight:700;font-size:16px;margin-top:2px">良</div>
+          </div>
+          <div style="background:var(--surface2);padding:10px;border-radius:6px">
+            <div style="color:var(--text-dim)">配合度</div>
+            <div style="color:var(--yellow);font-weight:700;font-size:16px;margin-top:2px">良</div>
+          </div>
+          <div style="background:var(--surface2);padding:10px;border-radius:6px">
+            <div style="color:var(--text-dim)">当前工单</div>
+            <div style="color:var(--text-bright);font-weight:700;font-size:16px;margin-top:2px">31</div>
+          </div>
+          <div style="background:var(--surface2);padding:10px;border-radius:6px">
+            <div style="color:var(--text-dim)">月均可交付</div>
+            <div style="color:var(--text-bright);font-weight:700;font-size:16px;margin-top:2px">50单</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📊 外包综合对比</div>
+    </div>
+    <div class="card-body">
+      <div class="chart-wrap"><canvas id="cOutsource"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PANEL 6: 认证体系
+════════════════════════════════════════ -->
+<div class="panel" id="cert-panel">
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">已认证外包商</div>
+      <div class="kpi-value" style="color:var(--green)">0</div>
+      <div class="kpi-sub">6月启动</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">渠道认证人员</div>
+      <div class="kpi-value" style="color:var(--accent)">0</div>
+      <div class="kpi-sub">待培训</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">认证课程完成率</div>
+      <div class="kpi-value" style="color:var(--text-dim)">--</div>
+      <div class="kpi-sub">尚未启动</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">持证交付比例</div>
+      <div class="kpi-value" style="color:var(--text-dim)">--</div>
+      <div class="kpi-sub">目标60%</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🎓 认证体系设计（进行中）</div>
+        <span class="tag tag-yellow">起草版</span>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:13px;font-weight:600">L1 · 基础交付认证</div>
+              <div style="font-size:11px;color:var(--text-dim)">SOP执行标准 · 工具使用</div>
+            </div>
+            <span class="tag tag-blue" style="font-size:10px">即将上线</span>
+          </div>
+          <div class="prog"><div class="prog-fill b" style="width:60%"></div></div>
+          <div style="font-size:11px;color:var(--text-dim)">60% 完成</div>
+        </div>
+        <div style="height:12px"></div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:13px;font-weight:600">L2 · 策略交付认证</div>
+              <div style="font-size:11px;color:var(--text-dim)">数据分析 · 策略调整 · 客情维护</div>
+            </div>
+            <span class="tag tag-blue" style="font-size:10px">待开发</span>
+          </div>
+          <div class="prog"><div class="prog-fill b" style="width:20%"></div></div>
+          <div style="font-size:11px;color:var(--text-dim)">20% 完成</div>
+        </div>
+        <div style="height:12px"></div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:13px;font-weight:600">L3 · 高级CS认证</div>
+              <div style="font-size:11px;color:var(--text-dim)">QBR · 增购推动 · 战略对齐</div>
+            </div>
+            <span class="tag tag-blue" style="font-size:10px">待开发</span>
+          </div>
+          <div class="prog"><div class="prog-fill b" style="width:5%"></div></div>
+          <div style="font-size:11px;color:var(--text-dim)">5% 完成</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📋 认证标准（草案）</div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="color:var(--green);font-size:16px">✓</span>
+            <div>
+              <div style="font-weight:600">SOP完整执行</div>
+              <div style="font-size:11px;color:var(--text-dim)">所有交付节点按标准文档执行</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="color:var(--green);font-size:16px">✓</span>
+            <div>
+              <div style="font-weight:600">质检合格率 ≥ 90%</div>
+              <div style="font-size:11px;color:var(--text-dim)">连续3个月抽检合格率达到90%以上</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="color:var(--yellow);font-size:16px">◐</span>
+            <div>
+              <div style="font-weight:600">客户满意度 ≥ 85%</div>
+              <div style="font-size:11px;color:var(--text-dim)">季度客户满意度调研得分85分以上</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="color:var(--text-dim);font-size:16px">○</span>
+            <div>
+              <div style="font-weight:600">交付时效达标 ≥ 95%</div>
+              <div style="font-size:11px;color:var(--text-dim)">约定交付时间内完成的工单比例</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0">
+            <span style="color:var(--text-dim);font-size:16px">○</span>
+            <div>
+              <div style="font-weight:600">年审机制</div>
+              <div style="font-size:11px;color:var(--text-dim)">每年重新认证考核，不合格降级/取消</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PANEL 7: 决策日志
+════════════════════════════════════════ -->
+<div class="panel" id="decisions-panel">
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-header">
+      <div class="card-title">⚖️ 关键决策记录</div>
+      <button style="background:var(--surface3);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer">+ 记录新决策</button>
+    </div>
+    <div class="card-body">
+      <div class="decision-item">
+        <div class="decision-date">5/28</div>
+        <div class="decision-text">
+          <div class="d-title">定位确认：供应链操盘手，不做交付执行</div>
+          <div class="d-desc">与老板对齐——自建交付团队改为「交付标准中台」，三块结构：CS中台 + 外包生态 + 认证体系</div>
+        </div>
+        <div class="decision-owner">K</div>
+      </div>
+      <div class="decision-item">
+        <div class="decision-date">5/27</div>
+        <div class="decision-text">
+          <div class="d-title">不建自营交付，改建3-5人标准中台</div>
+          <div class="d-desc">老板原方案「自建交付团队做备份」升级为「标准+抓手+供应商管理」中台，成本降低但控制力更强</div>
+        </div>
+        <div class="decision-owner">K+老板</div>
+      </div>
+      <div class="decision-item">
+        <div class="decision-date">5/25</div>
+        <div class="decision-text">
+          <div class="d-title">渠道首批客户由北京外包A组承接</div>
+          <div class="d-desc">长沙外包B组因质量不稳定，渠道客户优先分配给北京外包，待长沙整改完成后再评估</div>
+        </div>
+        <div class="decision-owner">K</div>
+      </div>
+      <div class="decision-item">
+        <div class="decision-date">5/20</div>
+        <div class="decision-text">
+          <div class="d-title">外包生态定位：产能池而非供应商</div>
+          <div class="d-desc">北京/长沙定义为「可替换产能单元」，不是长期合作伙伴——随时可以扩容替换，核心控制在标准层</div>
+        </div>
+        <div class="decision-owner">K</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PANEL 8: 异常中心
+════════════════════════════════════════ -->
+<div class="panel" id="alerts-panel">
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">总异常数</div>
+      <div class="kpi-value" style="color:var(--yellow)">3</div>
+      <div class="kpi-sub">2处理中 · 1已升级</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">严重</div>
+      <div class="kpi-value" style="color:var(--red)">1</div>
+      <div class="kpi-sub">需立即处理</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">警告</div>
+      <div class="kpi-value" style="color:var(--yellow)">2</div>
+      <div class="kpi-sub">本周关注</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">已解决</div>
+      <div class="kpi-value" style="color:var(--green)">7</div>
+      <div class="kpi-sub">本月累计</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🚨 异常明细</div>
+      <span class="tag tag-red">严重 1</span>
+    </div>
+    <div class="card-body">
+      <div class="alert-item">
+        <div class="alert-icon critical">!</div>
+        <div class="alert-body">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+            <div class="alert-title">长沙外包B组质检分降至78%</div>
+            <span class="tag tag-red" style="font-size:9px">严重</span>
+            <span class="tag tag-yellow" style="font-size:9px">升级</span>
+          </div>
+          <div class="alert-desc">本周抽检12个工单，3个不合格。长沙外包已连续2周质量下滑。</div>
+          <div class="alert-meta">
+            <span>📍 外包：长沙B组</span>
+            <span>🕐 触发时间：5月27日</span>
+            <span>👤 负责人：K</span>
+            <span>📌 状态：升级处理中</span>
+          </div>
+          <div style="margin-top:8px;padding:8px 12px;background:var(--red-dim);border-radius:6px;font-size:12px;color:var(--red)">
+            ⚠ 下一步：本周内约谈长沙外包负责人，制定整改计划；若2周内无改善，启动替换评估
+          </div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-icon warning">⚠</div>
+        <div class="alert-body">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+            <div class="alert-title">深圳XX科技健康分危险（52分）</div>
+            <span class="tag tag-yellow" style="font-size:9px">警告</span>
+          </div>
+          <div class="alert-desc">客户连续2周健康分下滑，CS已介入，3日内需完成客户沟通确认问题根因。</div>
+          <div class="alert-meta">
+            <span>📍 客户成功</span>
+            <span>🕐 触发时间：5月26日</span>
+            <span>👤 负责人：CS-李明</span>
+            <span>📌 状态：处理中</span>
+          </div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-icon warning">⚠</div>
+        <div class="alert-body">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+            <div class="alert-title">渠道首批客户量超预期，产能预警</div>
+            <span class="tag tag-yellow" style="font-size:9px">警告</span>
+          </div>
+          <div class="alert-desc">集团子公司首批10个客户已进入交付，若后续渠道持续放量，当前外包产能（130单/月）可能达到警戒线。</div>
+          <div class="alert-meta">
+            <span>📍 产能规划</span>
+            <span>🕐 触发时间：5月25日</span>
+            <span>👤 负责人：待分配</span>
+            <span>📌 状态：监控中</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">✅ 本月已解决异常</div>
+    </div>
+    <div class="card-body">
+      <div class="alert-item">
+        <div class="alert-icon success">✓</div>
+        <div class="alert-body">
+          <div class="alert-title">北京外包A组响应速度下降</div>
+          <div class="alert-desc">5月第三周响应速度评分从92分降至81分。经沟通系人员调动，已于5月22日恢复。</div>
+          <div class="alert-meta"><span>📍 北京外包A组</span><span>🕐 解决时间：5月22日</span><span>👤 负责人：K</span></div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-icon success">✓</div>
+        <div class="alert-body">
+          <div class="alert-title">渠道客户首批对接流程未跑通</div>
+          <div class="alert-desc">首批渠道客户分配时SOP未就位，导致路由混乱。已补充「渠道客户接入SOP v0.5」并完成交接。</div>
+          <div class="alert-meta"><span>📍 流程规范</span><span>🕐 解决时间：5月23日</span><span>👤 负责人：K</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
 <script>
-// Tab switching
-document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+// ── Clock ──
+function updateClock(){
+  const n=new Date();
+  document.getElementById('curTime').textContent=
+    n.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+}
+updateClock(); setInterval(updateClock,10000);
+
+// ── Nav ──
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(el.dataset.panel+'-panel').classList.add('active');
   });
 });
 
-// Time
-document.getElementById('updateTime').textContent = new Date().toLocaleString('zh-CN');
+// ── Sub-tabs ──
+document.querySelectorAll('.sub-tab').forEach(el=>{
+  el.addEventListener('click',()=>{
+    el.closest('.sub-tabs').querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
+    el.parentElement.querySelectorAll('.sub-panel').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('sub-'+el.dataset.sub).classList.add('active');
+  });
+});
 
-// Chart.js defaults
-Chart.defaults.color = '#6c7280';
-Chart.defaults.borderColor = '#242b38';
-Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-Chart.defaults.font.size = 11;
+// ── Charts ──
+const FONT_COLOR = '#5a6478';
+Chart.default.color = FONT_COLOR;
+Chart.default.font.family = 'system-ui, sans-serif';
 
-// Customer trend
-new Chart(document.getElementById('chartCustomerTrend'), {
-  type: 'line',
-  data: {
-    labels: ['12月','1月','2月','3月','4月','5月'],
-    datasets: [{
-      label: '总客户数', data: [180,192,200,215,235,247],
-      borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,0.08)',
-      fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: '#58a6ff',
-      borderWidth: 2
+const c1 = new Chart(document.getElementById('c1'),{
+  type:'bar',
+  data:{
+    labels:['5月','6月','7月','8月','9月','10月'],
+    datasets:[{
+      label:'整体进度%',
+      data:[15,42,68,82,95,100],
+      backgroundColor:'rgba(79,142,247,0.7)',
+      borderColor:'#4f8ef7',
+      borderWidth:1,
+      borderRadius:4
     },{
-      label: '渠道来源', data: [0,0,5,12,20,35],
-      borderColor: '#a371f7', backgroundColor: 'rgba(163,113,247,0.05)',
-      fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: '#a371f7',
-      borderWidth: 2
+      label:'CS中台',
+      data:[30,65,90,100,100,100],
+      backgroundColor:'rgba(52,199,89,0.7)',
+      borderColor:'#34c759',
+      borderWidth:1,
+      borderRadius:4
+    },{
+      label:'外包管理',
+      data:[20,55,80,95,100,100],
+      backgroundColor:'rgba(245,166,35,0.7)',
+      borderColor:'#f5a623',
+      borderWidth:1,
+      borderRadius:4
     }]
   },
-  options: { responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { boxWidth: 12, padding: 20 } } },
-    scales: { y: { beginAtZero: false, min: 150, grid: { color: '#1a1f2b' } }, x: { grid: { display: false } } }
-  }
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top',labels:{boxWidth:12,padding:16}},
+             tooltip:{mode:'index',intersect:false}},
+    scales:{x:{grid:{color:'rgba(37,45,64,0.8)'},stacked:false},
+            y:{max:100,grid:{color:'rgba(37,45,64,0.8)'},
+               ticks:{callback:v=>v+'%'}}}}
 });
 
-// Quality overview
-new Chart(document.getElementById('chartQuality'), {
-  type: 'bar',
-  data: {
-    labels: ['操作规范','交付时效','客户满意度','数据准确'],
-    datasets: [{
-      label: '当前', data: [88,92,85,90],
-      backgroundColor: ['#58a6ff','#3fb950','#a371f7','#d2991d'],
-      borderRadius: 4
+const cHealth = new Chart(document.getElementById('cHealth'),{
+  type:'doughnut',
+  data:{
+    labels:['健康(≥80)','关注(60-79)','危险(<60)'],
+    datasets:[{data:[189,47,11],backgroundColor:['#34c759','#f5a623','#ff453a'],borderWidth:0,hoverOffset:8}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+    plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:12}}}}
+});
+
+const cOutsource = new Chart(document.getElementById('cOutsource'),{
+  type:'radar',
+  data:{
+    labels:['产能','质量','响应','配合','价格','稳定性'],
+    datasets:[{
+      label:'北京外包A组',
+      data:[88,85,92,90,75,88],
+      backgroundColor:'rgba(52,199,89,0.15)',
+      borderColor:'#34c759',pointBackgroundColor:'#34c759',
+      borderWidth:2,pointRadius:4
+    },{
+      label:'长沙外包B组',
+      data:[72,78,70,72,80,65],
+      backgroundColor:'rgba(245,166,35,0.15)',
+      borderColor:'#f5a623',pointBackgroundColor:'#f5a623',
+      borderWidth:2,pointRadius:4
     }]
   },
-  options: { responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: { y: { min: 60, max: 100, grid: { color: '#1a1f2b' } }, x: { grid: { display: false } } }
-  }
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{r:{grid:{color:'rgba(37,45,64,0.8)'},angleLines:{color:'rgba(37,45,64,0.8)'},
+              pointLabels:{color:'#c4ccd8',font:{size:11}},min:0,max:100,ticks:{stepSize:20,display:false}}}}
 });
 
-// Client tiers
-new Chart(document.getElementById('chartTiers'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Tier 1 大客户','Tier 2 标准','Tier 3 自助'],
-    datasets: [{ data: [28,164,55], backgroundColor: ['#58a6ff','#3fb950','#242b38'], borderWidth: 0 }]
-  },
-  options: { responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 16 } } }
-  }
-});
-
-// Vendor comparison
-new Chart(document.getElementById('chartVendor'), {
-  type: 'bar',
-  data: {
-    labels: ['操作规范','交付时效','客户满意','数据准确','综合'],
-    datasets: [
-      { label: '北京艾迪', data: [94,90,92,91,92], backgroundColor: '#58a6ff', borderRadius: 4 },
-      { label: '长沙网拓', data: [80,85,72,82,78], backgroundColor: '#d2991d', borderRadius: 4 }
-    ]
-  },
-  options: { responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { boxWidth: 10, padding: 16 } } },
-    scales: { y: { min: 50, max: 100, grid: { color: '#1a1f2b' } }, x: { grid: { display: false } } }
-  }
-});
-
-// Capacity
-new Chart(document.getElementById('chartCapacity'), {
-  type: 'line',
-  data: {
-    labels: ['W1','W2','W3','W4','W5','W6','W7','W8'],
-    datasets: [
-      { label: '北京利用率', data: [72,75,78,80,82,85,80,78], borderColor: '#58a6ff', tension: .3, borderWidth: 2, pointRadius: 2 },
-      { label: '长沙利用率', data: [65,68,70,72,74,76,74,74], borderColor: '#d2991d', tension: .3, borderWidth: 2, pointRadius: 2 },
-      { label: '警戒线', data: [85,85,85,85,85,85,85,85], borderColor: '#f85149', borderDash: [5,5], borderWidth: 1, pointRadius: 0 }
-    ]
-  },
-  options: { responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { boxWidth: 10, padding: 16 } } },
-    scales: { y: { min: 50, max: 100, grid: { color: '#1a1f2b' } }, x: { grid: { display: false } } }
-  }
-});
-
-// Cert levels
-new Chart(document.getElementById('chartCertLevel'), {
-  type: 'bar',
-  data: {
-    labels: ['L1 投放师','L2 CS经理','L3 培训师'],
-    datasets: [{ label: '持证', data: [22,12,4], backgroundColor: ['#58a6ff','#a371f7','#3fb950'], borderRadius: 4 }]
-  },
-  options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-    plugins: { legend: { display: false } },
-    scales: { x: { grid: { color: '#1a1f2b' } }, y: { grid: { display: false } } }
-  }
-});
-
-// Cert trend
-new Chart(document.getElementById('chartCertTrend'), {
-  type: 'line',
-  data: {
-    labels: ['12月','1月','2月','3月','4月','5月'],
-    datasets: [{
-      label: '累计持证', data: [10,15,20,24,32,38],
-      borderColor: '#a371f7', backgroundColor: 'rgba(163,113,247,0.08)',
-      fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: '#a371f7',
-      borderWidth: 2
-    }]
-  },
-  options: { responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: { y: { min: 0, grid: { color: '#1a1f2b' } }, x: { grid: { display: false } } }
-  }
+// ── Timeline Render ──
+const workstreams = [
+  {name:'CS中台搭建',owner:'K',start:'5/28',end:'6/13',progress:45,cls:'blue',status:'进行中'},
+  {name:'外包SOP落地',owner:'K',start:'5/28',end:'6/6',progress:60,cls:'blue',status:'进行中'},
+  {name:'质检体系搭建',owner:'待定',start:'6/3',end:'6/20',progress:10,cls:'yellow',status:'即将启动'},
+  {name:'认证体系设计',owner:'待定',start:'6/10',end:'7/4',progress:5,cls:'gray',status:'待启动'},
+  {name:'试点客户验证',owner:'CS-李明',start:'6/20',end:'7/18',progress:0,cls:'gray',status:'待启动'},
+  {name:'渠道培训认证',owner:'待定',start:'7/4',end:'8/1',progress:0,cls:'gray',status:'待启动'},
+];
+const tl = document.getElementById('timeline');
+workstreams.forEach(ws=>{
+  tl.innerHTML+=`<div class="timeline-item">
+    <div class="tl-left">
+      <div class="tl-name">${ws.name}</div>
+      <div class="tl-owner">👤 ${ws.owner}</div>
+    </div>
+    <div class="tl-right">
+      <div class="tl-bar-wrap">
+        <div class="tl-bar ${ws.cls}">${ws.progress}%</div>
+        <div class="prog" style="flex:1"><div class="prog-fill ${ws.cls==='blue'?'b':ws.cls==='yellow'?'y':ws.cls==='green'?'g':ws.cls==='red'?'r':'b'}" style="width:${ws.progress}%"></div></div>
+      </div>
+      <div class="tl-meta">
+        <span>📅 ${ws.start} → ${ws.end}</span>
+        <span style="color:${ws.status==='进行中'?'var(--accent)':ws.status==='已阻塞'?'var(--red)':'var(--text-dim)'}">${ws.status}</span>
+      </div>
+    </div>
+  </div>`;
 });
 </script>
 </body>
