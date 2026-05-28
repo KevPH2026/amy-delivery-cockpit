@@ -3,1309 +3,1344 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>艾米交付体系 · 战略驾驶舱 v2</title>
+<title>艾米交付体系 · 指挥官中心 v3</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #0b0e17;
-    --surface: #111520;
-    --surface2: #181d2a;
-    --surface3: #1f2537;
-    --border: #252d40;
-    --text: #c4ccd8;
-    --text-dim: #5a6478;
-    --text-bright: #e8ecf4;
-    --accent: #4f8ef7;
-    --accent-dim: rgba(79,142,247,0.15);
-    --green: #34c759;
-    --green-dim: rgba(52,199,89,0.15);
-    --yellow: #f5a623;
-    --yellow-dim: rgba(245,166,35,0.15);
-    --red: #ff453a;
-    --red-dim: rgba(255,69,58,0.15);
-    --purple: #af52de;
-    --purple-dim: rgba(175,82,222,0.15);
-    --cyan: #32d4de;
-    --cyan-dim: rgba(50,212,222,0.15);
-    --radius: 10px;
-    --radius-sm: 6px;
-    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
+:root{
+  --bg:#0b0e17;--surface:#111520;--surface2:#181d2a;--surface3:#1f2537;
+  --border:#252d40;--text:#c4ccd8;--text-dim:#5a6478;--text-bright:#e8ecf4;
+  --accent:#4f8ef7;--accent-dim:rgba(79,142,247,.15);
+  --green:#34c759;--green-dim:rgba(52,199,89,.15);
+  --yellow:#f5a623;--yellow-dim:rgba(245,166,35,.15);
+  --red:#ff453a;--red-dim:rgba(255,69,58,.15);
+  --purple:#af52de;--cyan:#32d4de;
+  --radius:10px;--radius-sm:6px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
 
-  /* ─── Header ─── */
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    display: flex; align-items: center; justify-content: space-between;
-    height: 58px; position: sticky; top: 0; z-index: 100;
-  }
-  .header-left { display: flex; align-items: center; gap: 12px; }
-  .header-logo {
-    display: flex; align-items: center; gap: 8px;
-    font-weight: 700; font-size: 15px; letter-spacing: -0.3px; color: var(--text-bright);
-  }
-  .header-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
-  .header-badge { background: var(--accent-dim); color: var(--accent); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.3px; }
-  .header-right { display: flex; align-items: center; gap: 20px; font-size: 12px; color: var(--text-dim); }
-  .header-right .live { color: var(--green); display: flex; align-items: center; gap: 5px; }
-  .header-right .live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+/* ─── TOPBAR ─── */
+.topbar{
+  height:56px;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:16px;
+  position:sticky;top:0;z-index:200;
+}
+.topbar-brand{
+  display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--text-bright);
+}
+.topbar-brand .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
+.topbar-date{font-size:12px;color:var(--text-dim);margin-left:auto;}
+.topbar-date .today{font-size:15px;font-weight:700;color:var(--text-bright);margin-left:8px;}
+.topbar-actions{display:flex;gap:8px;}
+.topbar-btn{
+  background:var(--surface3);border:1px solid var(--border);color:var(--text);
+  padding:6px 14px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;
+  transition:all .15s;
+}
+.topbar-btn:hover{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+.topbar-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-  /* ─── Nav Bar ─── */
-  .nav {
-    display: flex; gap: 0;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    overflow-x: auto;
-  }
-  .nav::-webkit-scrollbar { display: none; }
-  .nav-item {
-    padding: 11px 18px; font-size: 13px; font-weight: 500;
-    color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent;
-    transition: all .2s; white-space: nowrap; letter-spacing: -0.2px;
-  }
-  .nav-item:hover { color: var(--text); }
-  .nav-item.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .nav-item .count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 10px; font-weight: 700; margin-left: 5px; }
-  .count-red { background: var(--red); color: #fff; }
-  .count-yellow { background: var(--yellow); color: #000; }
-  .count-green { background: var(--green); color: #fff; }
+/* ─── LAYOUT ─── */
+.layout{display:flex;height:calc(100vh - 56px);}
 
-  /* ─── Content ─── */
-  .content { padding: 20px 24px; max-width: 1520px; margin: 0 auto; }
-  .panel { display: none; }
-  .panel.active { display: block; }
+/* ─── SIDEBAR ─── */
+.sidebar{
+  width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  overflow-y:auto;padding:12px 0;
+}
+.sidebar-section{margin-bottom:4px;}
+.sidebar-label{
+  font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;
+  letter-spacing:.8px;padding:8px 16px 4px;
+}
+.nav-btn{
+  display:flex;align-items:center;gap:10px;padding:9px 16px;
+  font-size:13px;color:var(--text);cursor:pointer;transition:all .15s;
+  border-left:3px solid transparent;position:relative;
+}
+.nav-btn:hover{background:var(--surface2);color:var(--text-bright);}
+.nav-btn.active{background:var(--accent-dim);color:var(--accent);border-left-color:var(--accent);}
+.nav-btn .nb-icon{font-size:15px;width:20px;text-align:center;}
+.nav-btn .nb-name{flex:1;}
+.nav-btn .nb-count{
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;
+  background:var(--surface3);color:var(--text-dim);
+}
+.nav-btn .nb-count.red{background:var(--red-dim);color:var(--red);}
+.nav-btn .nb-count.yellow{background:var(--yellow-dim);color:var(--yellow);}
+.nav-btn .nb-count.green{background:var(--green-dim);color:var(--green);}
 
-  /* ─── KPI Row ─── */
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px; margin-bottom: 18px;
-  }
-  .kpi-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 16px 18px;
-    transition: border-color .2s;
-  }
-  .kpi-card:hover { border-color: var(--accent); }
-  .kpi-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
-  .kpi-value { font-size: 30px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
-  .kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
-  .kpi-sub .up { color: var(--green); font-weight: 600; }
-  .kpi-sub .warn { color: var(--yellow); font-weight: 600; }
-  .kpi-sub .danger { color: var(--red); font-weight: 600; }
+/* ─── MAIN ─── */
+.main{flex:1;overflow-y:auto;padding:20px 24px;max-width:1100px;}
 
-  /* ─── Section Card ─── */
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden; margin-bottom: 14px;
-  }
-  .card-header {
-    padding: 14px 18px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--text-bright); display: flex; align-items: center; gap: 7px; letter-spacing: -0.2px; }
-  .card-title .tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.2px; }
-  .tag-red { background: var(--red-dim); color: var(--red); }
-  .tag-yellow { background: var(--yellow-dim); color: var(--yellow); }
-  .tag-green { background: var(--green-dim); color: var(--green); }
-  .tag-blue { background: var(--accent-dim); color: var(--accent); }
-  .tag-purple { background: var(--purple-dim); color: var(--purple); }
-  .card-body { padding: 14px 18px; }
+/* ─── TODAY HUD ─── */
+.today-hud{
+  background:linear-gradient(135deg,var(--surface),var(--surface2));
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px 24px;margin-bottom:20px;
+}
+.today-hud .hud-label{font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.today-hud .hud-title{font-size:22px;font-weight:700;color:var(--text-bright);margin-bottom:2px;}
+.today-hud .hud-sub{font-size:12px;color:var(--text-dim);}
+.hud-items{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;}
+.hud-item{
+  background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px 16px;min-width:200px;flex:1;cursor:pointer;transition:all .15s;
+}
+.hud-item:hover{border-color:var(--accent);background:var(--accent-dim);}
+.hud-item .hi-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.hud-item .hi-value{font-size:20px;font-weight:700;}
+.hud-item .hi-meta{font-size:11px;color:var(--text-dim);margin-top:2px;}
 
-  /* ─── Grid layouts ─── */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-  @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+/* ─── SECTION ─── */
+.section{margin-bottom:24px;}
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.section-title{font-size:15px;font-weight:700;color:var(--text-bright);display:flex;align-items:center;gap:8px;}
+.section-title .emoji{font-size:18px;}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;
+}
+.badge-red{background:var(--red-dim);color:var(--red);}
+.badge-yellow{background:var(--yellow-dim);color:var(--yellow);}
+.badge-green{background:var(--green-dim);color:var(--green);}
+.badge-blue{background:var(--accent-dim);color:var(--accent);}
+.badge-gray{background:var(--surface3);color:var(--text-dim);}
 
-  /* ─── Progress Bar ─── */
-  .prog { width: 100%; height: 5px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin: 4px 0; }
-  .prog-fill { height: 100%; border-radius: 3px; }
-  .prog-fill.g { background: var(--green); }
-  .prog-fill.y { background: var(--yellow); }
-  .prog-fill.r { background: var(--red); }
-  .prog-fill.b { background: var(--accent); }
+/* ─── TASK CARD ─── */
+.task-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:10px;padding:14px 16px;
+  display:grid;grid-template-columns:1fr auto auto;
+  gap:12px;align-items:center;
+  transition:border-color .15s;
+}
+.task-card:hover{border-color:var(--accent);}
+.task-card.done{opacity:.5;}
+.task-card.blocked{border-left:3px solid var(--red);}
+.task-card.high-priority{border-left:3px solid var(--yellow);}
+.task-card .tc-left{display:flex;align-items:center;gap:10px;}
+.task-card .tc-check{
+  width:20px;height:20px;border-radius:50%;border:2px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:11px;transition:all .15s;flex-shrink:0;
+}
+.task-card .tc-check.done{background:var(--green);border-color:var(--green);color:#fff;}
+.task-card .tc-text .tc-name{font-size:13px;font-weight:600;color:var(--text-bright);}
+.task-card .tc-text .tc-meta{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.task-card .tc-text .tc-name.done{text-decoration:line-through;}
+.task-card .tc-status{
+  font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;
+}
+.task-card .tc-date{font-size:12px;color:var(--text-dim);white-space:nowrap;}
 
-  /* ─── Timeline (Gantt) ─── */
-  .timeline { position: relative; }
-  .timeline-item {
-    display: grid; grid-template-columns: 220px 1fr;
-    gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border);
-    align-items: center;
-  }
-  .timeline-item:last-child { border-bottom: none; }
-  .tl-left .tl-name { font-size: 13px; font-weight: 600; color: var(--text-bright); }
-  .tl-left .tl-owner { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-  .tl-right { display: flex; flex-direction: column; gap: 4px; }
-  .tl-bar-wrap { display: flex; align-items: center; gap: 8px; }
-  .tl-bar {
-    height: 22px; border-radius: 4px; display: flex; align-items: center;
-    font-size: 11px; font-weight: 600; padding: 0 10px; color: #fff; min-width: 80px;
-    white-space: nowrap; position: relative; overflow: hidden;
-  }
-  .tl-bar.green { background: linear-gradient(90deg, var(--green), #2da44e); }
-  .tl-bar.blue { background: linear-gradient(90deg, var(--accent), #3d7be0); }
-  .tl-bar.yellow { background: linear-gradient(90deg, var(--yellow), #d4940a); }
-  .tl-bar.red { background: linear-gradient(90deg, var(--red), #d93030); }
-  .tl-bar.gray { background: var(--surface3); color: var(--text-dim); }
-  .tl-meta { font-size: 11px; color: var(--text-dim); display: flex; gap: 12px; }
+/* ─── QUICK ADD ─── */
+.quick-add{
+  background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:10px;display:none;
+}
+.quick-add.show{display:block;}
+.quick-add input{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 12px;color:var(--text-bright);
+  font-size:13px;outline:none;margin-bottom:8px;
+}
+.quick-add input:focus{border-color:var(--accent);}
+.quick-add input::placeholder{color:var(--text-dim);}
+.quick-add-row{display:flex;gap:8px;}
+.quick-add select{
+  background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);padding:7px 10px;font-size:12px;cursor:pointer;
+}
+.quick-add-btns{display:flex;gap:8px;margin-top:8px;}
+.btn{
+  padding:7px 16px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;
+  cursor:pointer;border:none;transition:all .15s;
+}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{opacity:.85;}
+.btn-ghost{background:var(--surface3);color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
 
-  /* Milestone */
-  .milestone-row { display: flex; gap: 0; margin-top: 10px; padding: 0 220px 0 0; position: relative; }
-  .milestone-row::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--border); transform: translateY(-50%); z-index: 0; }
-  .milestone { display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 1; flex: 1; }
-  .milestone-dot { width: 14px; height: 14px; border-radius: 50%; border: 3px solid; }
-  .milestone-dot.done { border-color: var(--green); background: var(--green); }
-  .milestone-dot.active { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 0 4px var(--accent-dim); }
-  .milestone-dot.pending { border-color: var(--border); background: var(--surface); }
-  .milestone-label { font-size: 10px; color: var(--text-dim); text-align: center; max-width: 70px; }
+/* ─── ALERT CARD ─── */
+.alert-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:10px;padding:14px 16px;
+  border-left:3px solid;
+}
+.alert-card.critical{border-left-color:var(--red);}
+.alert-card.warning{border-left-color:var(--yellow);}
+.alert-card.info{border-left-color:var(--accent);}
+.alert-card .ac-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.alert-card .ac-title{font-size:13px;font-weight:700;color:var(--text-bright);flex:1;}
+.alert-card .ac-icon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;}
+.alert-card.critical .ac-icon{background:var(--red-dim);color:var(--red);}
+.alert-card.warning .ac-icon{background:var(--yellow-dim);color:var(--yellow);}
+.alert-card.info .ac-icon{background:var(--accent-dim);color:var(--accent);}
+.alert-card .ac-desc{font-size:12px;color:var(--text-dim);margin-bottom:8px;}
+.alert-card .ac-meta{display:flex;gap:16px;font-size:11px;color:var(--text-dim);margin-bottom:8px;}
+.alert-card .ac-actions{display:flex;gap:6px;}
+.ac-action{
+  padding:5px 12px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;
+  cursor:pointer;border:none;transition:all .15s;
+}
+.ac-action.resolve{background:var(--green-dim);color:var(--green);}
+.ac-action.escalate{background:var(--red-dim);color:var(--red);}
+.ac-action.monitor{background:var(--yellow-dim);color:var(--yellow);}
 
-  /* ─── Task List ─── */
-  .task-item {
-    display: grid; grid-template-columns: 1fr auto auto auto;
-    gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border);
-    align-items: center; font-size: 13px;
-  }
-  .task-item:last-child { border-bottom: none; }
-  .task-text .task-name { color: var(--text-bright); font-weight: 500; }
-  .task-text .task-meta { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
-  .task-status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 12px; }
-  .status-done { background: var(--green-dim); color: var(--green); }
-  .status-active { background: var(--accent-dim); color: var(--accent); }
-  .status-blocked { background: var(--red-dim); color: var(--red); }
-  .status-pending { background: var(--surface3); color: var(--text-dim); }
-  .task-date { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
-  .task-priority { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .p-high { background: var(--red); box-shadow: 0 0 6px var(--red); }
-  .p-med { background: var(--yellow); }
-  .p-low { background: var(--text-dim); }
+/* ─── DECISION LOG ─── */
+.decision-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:10px;padding:14px 16px;
+}
+.decision-card .dc-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;}
+.decision-card .dc-date{font-size:11px;color:var(--text-dim);padding:2px 8px;background:var(--surface3);border-radius:var(--radius-sm);white-space:nowrap;}
+.decision-card .dc-title{font-size:13px;font-weight:700;color:var(--text-bright);}
+.decision-card .dc-desc{font-size:12px;color:var(--text-dim);}
+.decision-card .dc-owner{font-size:11px;color:var(--accent);}
 
-  /* ─── Alert ─── */
-  .alert-item {
-    display: flex; align-items: flex-start; gap: 12px; padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .alert-item:last-child { border-bottom: none; }
-  .alert-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
-  .alert-icon.critical { background: var(--red-dim); color: var(--red); }
-  .alert-icon.warning { background: var(--yellow-dim); color: var(--yellow); }
-  .alert-icon.info { background: var(--accent-dim); color: var(--accent); }
-  .alert-icon.success { background: var(--green-dim); color: var(--green); }
-  .alert-body { flex: 1; }
-  .alert-title { font-size: 13px; font-weight: 600; color: var(--text-bright); }
-  .alert-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-  .alert-meta { display: flex; gap: 12px; margin-top: 4px; font-size: 11px; color: var(--text-dim); }
+/* ─── CS TABLE ─── */
+.cs-table{width:100%;border-collapse:collapse;font-size:13px;}
+.cs-table th{text-align:left;padding:8px 12px;color:var(--text-dim);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+.cs-table td{padding:10px 12px;border-bottom:1px solid var(--border);}
+.cs-table tr:last-child td{border-bottom:none;}
+.cs-table .score{font-weight:700;font-size:15px;}
+.cs-table .trend{font-size:12px;}
+.health-mini{width:60px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+.health-mini .fill{height:100%;border-radius:2px;}
 
-  /* ─── Score Card ─── */
-  .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .score-card {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 14px 16px;
-  }
-  .score-card .sc-name { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; font-weight: 500; }
-  .score-card .sc-score { font-size: 36px; font-weight: 700; letter-spacing: -1px; }
-  .score-card .sc-bar { margin-top: 8px; }
-  .score-card .sc-meta { font-size: 11px; color: var(--text-dim); margin-top: 4px; display: flex; justify-content: space-between; }
+/* ─── OUTSOURCE CARD ─── */
+.outsource-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:14px;
+}
+.outsource-card .oc-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.outsource-card .oc-name{font-size:15px;font-weight:700;color:var(--text-bright);flex:1;}
+.outsource-card .oc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.outsource-card .oc-stat{background:var(--surface2);padding:10px 12px;border-radius:var(--radius-sm);}
+.outsource-card .oc-stat .ocs-label{font-size:10px;color:var(--text-dim);margin-bottom:4px;}
+.outsource-card .oc-stat .ocs-val{font-size:18px;font-weight:700;}
+.outsource-card .oc-score-row{display:flex;gap:10px;}
+.outsource-card .oc-score{flex:1;background:var(--surface2);padding:10px 12px;border-radius:var(--radius-sm);}
+.outsource-card .oc-score .ocs-label{font-size:10px;color:var(--text-dim);margin-bottom:4px;}
+.outsource-card .oc-bar{height:5px;background:var(--surface3);border-radius:3px;margin-top:4px;overflow:hidden;}
+.outsource-card .oc-bar .fill{height:100%;border-radius:3px;}
 
-  /* ─── Decision Log ─── */
-  .decision-item {
-    display: grid; grid-template-columns: 80px 1fr auto;
-    gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border);
-    align-items: start; font-size: 13px;
-  }
-  .decision-item:last-child { border-bottom: none; }
-  .decision-date { font-size: 11px; color: var(--text-dim); padding-top: 2px; }
-  .decision-text { color: var(--text-bright); }
-  .decision-text .d-title { font-weight: 600; }
-  .decision-text .d-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-  .decision-owner { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+/* ─── CHARTS ─── */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+.chart-card .cc-title{font-size:13px;font-weight:600;color:var(--text-bright);margin-bottom:12px;}
+.chart-wrap{position:relative;height:180px;}
+.chart-wrap canvas{width:100%!important;height:100%!important;}
 
-  /* ─── Next Action Banner ─── */
-  .next-action {
-    background: linear-gradient(135deg, var(--surface2), var(--surface3));
-    border: 1px solid var(--accent); border-radius: var(--radius);
-    padding: 16px 20px; display: flex; align-items: center; gap: 16px;
-    margin-bottom: 18px;
-  }
-  .next-action .na-icon { width: 40px; height: 40px; border-radius: 50%; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-  .next-action .na-content { flex: 1; }
-  .next-action .na-label { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
-  .next-action .na-title { font-size: 15px; font-weight: 700; color: var(--text-bright); margin-top: 2px; }
-  .next-action .na-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-  .next-action .na-btn { background: var(--accent); color: #fff; border: none; padding: 8px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
-  .next-action .na-btn:hover { opacity: .9; }
+/* ─── MODAL ─── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.show{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto;
+}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.modal-title{font-size:16px;font-weight:700;color:var(--text-bright);}
+.modal-close{background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;}
+.modal-close:hover{color:var(--text);}
+.modal-field{margin-bottom:14px;}
+.modal-field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:500;}
+.modal-field input,.modal-field select,.modal-field textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 12px;color:var(--text-bright);
+  font-size:13px;font-family:var(--font);outline:none;
+}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--accent);}
+.modal-field textarea{resize:vertical;min-height:80px;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
 
-  /* ─── Chart wrapper ─── */
-  .chart-wrap { position: relative; height: 220px; }
-  .chart-wrap canvas { width: 100% !important; height: 100% !important; }
-  .chart-wrap-sm { height: 160px; }
+/* ─── EMPTY STATE ─── */
+.empty{
+  text-align:center;padding:40px 20px;
+  color:var(--text-dim);font-size:13px;
+}
+.empty .empty-icon{font-size:32px;margin-bottom:8px;opacity:.4;}
 
-  /* ─── CS Health table ─── */
-  .cs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .cs-table th { text-align: left; padding: 8px 12px; color: var(--text-dim); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
-  .cs-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
-  .cs-table tr:last-child td { border-bottom: none; }
-  .cs-table .health-bar { width: 80px; height: 4px; background: var(--surface3); border-radius: 2px; }
-  .cs-table .health-fill { height: 100%; border-radius: 2px; }
+/* ─── MILESTONE ─── */
+.milestone-track{display:flex;align-items:center;gap:0;padding:0 20px;margin:16px 0;position:relative;}
+.milestone-track::before{content:'';position:absolute;left:20px;right:20px;top:50%;height:2px;background:var(--border);transform:translateY(-50%);z-index:0;}
+.milestone{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
+.milestone .m-dot{width:14px;height:14px;border-radius:50%;border:3px solid;background:var(--bg);}
+.milestone .m-dot.done{border-color:var(--green);background:var(--green);}
+.milestone .m-dot.active{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-dim);}
+.milestone .m-dot.pending{border-color:var(--border);background:var(--surface);}
+.milestone .m-label{font-size:10px;color:var(--text-dim);text-align:center;max-width:60px;}
+.milestone .m-date{font-size:9px;color:var(--accent);}
 
-  /* ─── Tabs inside card ─── */
-  .sub-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 18px; }
-  .sub-tab { padding: 10px 16px; font-size: 12px; font-weight: 500; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; }
-  .sub-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .sub-panel { display: none; }
-  .sub-panel.active { display: block; }
+/* ─── FILTER BAR ─── */
+.filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.filter-btn{
+  padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;
+  background:var(--surface3);border:1px solid var(--border);color:var(--text-dim);
+  cursor:pointer;transition:all .15s;
+}
+.filter-btn:hover,.filter-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
 
-  /* ─── Responsive ─── */
-  @media (max-width: 768px) {
-    .content { padding: 12px; }
-    .kpi-row { grid-template-columns: repeat(2, 1fr); }
-    .timeline-item { grid-template-columns: 1fr; gap: 6px; }
-    .milestone-row { padding: 0; }
-    .task-item { grid-template-columns: 1fr auto; gap: 8px; }
-  }
+/* ─── PROGRESS ─── */
+.prog{width:100%;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;}
+.prog .fill{height:100%;border-radius:3px;}
+
+/* ─── SETTINGS ─── */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.settings-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+.settings-item .si-label{font-size:11px;color:var(--text-dim);margin-bottom:6px;}
+.settings-item .si-value{font-size:15px;font-weight:700;color:var(--text-bright);}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .sidebar{width:180px;}
+  .main{padding:16px;}
+  .chart-row{grid-template-columns:1fr;}
+  .outsource-card .oc-grid{grid-template-columns:1fr 1fr;}
+  .settings-grid{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  .sidebar{display:none;}
+  .hud-items{flex-direction:column;}
+}
 </style>
 </head>
 <body>
 
-<!-- ─── HEADER ─── -->
-<div class="header">
-  <div class="header-left">
-    <div class="header-logo">
-      <span class="dot"></span>
-      艾米交付体系 · 战略驾驶舱
+<!-- ─── TOPBAR ─── -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="dot"></span>
+    艾米交付体系 · 指挥官中心
+  </div>
+  <span class="topbar-date" id="topbarDate">
+    <span id="curDate">2026年5月28日</span>
+    <span class="today" id="curWeekday">周四</span>
+  </span>
+  <div class="topbar-actions">
+    <button class="topbar-btn" onclick="openModal('addTask')">+ 新任务</button>
+    <button class="topbar-btn" onclick="openModal('addAlert')">+ 记录异常</button>
+    <button class="topbar-btn" onclick="openModal('addDecision')">+ 记录决策</button>
+    <button class="topbar-btn primary" onclick="saveAll()">💾 保存全部</button>
+  </div>
+</div>
+
+<!-- ─── LAYOUT ─── -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">📊 日常视图</div>
+      <div class="nav-btn active" data-panel="today">
+        <span class="nb-icon">🎯</span>
+        <span class="nb-name">今日待办</span>
+        <span class="nb-count red" id="cntToday">2</span>
+      </div>
+      <div class="nav-btn" data-panel="week">
+        <span class="nb-icon">📅</span>
+        <span class="nb-name">本周概览</span>
+        <span class="nb-count yellow" id="cntWeek">5</span>
+      </div>
     </div>
-    <span class="header-badge">v2.0</span>
+    <div class="sidebar-section">
+      <div class="sidebar-label">🏗 实施管理</div>
+      <div class="nav-btn" data-panel="tasks">
+        <span class="nb-icon">📋</span>
+        <span class="nb-name">任务中心</span>
+        <span class="nb-count" id="cntTasks">12</span>
+      </div>
+      <div class="nav-btn" data-panel="milestone">
+        <span class="nb-icon">🏁</span>
+        <span class="nb-name">里程碑</span>
+        <span class="nb-count green">1</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">💎 业务运营</div>
+      <div class="nav-btn" data-panel="cs">
+        <span class="nb-icon">💎</span>
+        <span class="nb-name">客户成功</span>
+        <span class="nb-count red" id="cntDanger">2</span>
+      </div>
+      <div class="nav-btn" data-panel="outsource">
+        <span class="nb-icon">🔧</span>
+        <span class="nb-name">外包管理</span>
+        <span class="nb-count yellow" id="cntOutsource">1</span>
+      </div>
+      <div class="nav-btn" data-panel="cert">
+        <span class="nb-icon">🎓</span>
+        <span class="nb-name">认证体系</span>
+        <span class="nb-count">0</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">🗂 知识沉淀</div>
+      <div class="nav-btn" data-panel="decisions">
+        <span class="nb-icon">⚖️</span>
+        <span class="nb-name">决策日志</span>
+        <span class="nb-count">4</span>
+      </div>
+      <div class="nav-btn" data-panel="alerts">
+        <span class="nb-icon">🚨</span>
+        <span class="nb-name">异常中心</span>
+        <span class="nb-count red" id="cntAlerts">3</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">⚙️ 系统</div>
+      <div class="nav-btn" data-panel="settings">
+        <span class="nb-icon">⚙️</span>
+        <span class="nb-name">数据配置</span>
+      </div>
+    </div>
   </div>
-  <div class="header-right">
-    <span class="live">运行中</span>
-    <span id="curTime">--:--</span>
-    <span>数据版本：<span id="dataVer">示例数据</span></span>
-  </div>
-</div>
 
-<!-- ─── NAV ─── -->
-<div class="nav">
-  <div class="nav-item active" data-panel="pulse">🚀 指挥官总览</div>
-  <div class="nav-item" data-panel="roadmap">📅 实施路线图</div>
-  <div class="nav-item" data-panel="tasks">📋 任务中心</div>
-  <div class="nav-item" data-panel="cs">💎 客户成功</div>
-  <div class="nav-item" data-panel="outsource">🔧 外包管理</div>
-  <div class="nav-item" data-panel="cert">🎓 认证体系</div>
-  <div class="nav-item" data-panel="decisions">⚖️ 决策日志</div>
-  <div class="nav-item" data-panel="alerts">🚨 异常中心 <span class="count count-red">3</span></div>
-</div>
+  <!-- MAIN -->
+  <div class="main">
 
-<div class="content">
+    <!-- ══════════════ TODAY ══════════════ -->
+    <div class="panel active" id="panel-today">
+
+      <!-- TODAY HUD -->
+      <div class="today-hud">
+        <div class="hud-label">今日 · <span id="hudDate">2026年5月28日</span></div>
+        <div class="hud-title">你今天有 <span id="hudTaskCount" style="color:var(--accent)">2</span> 项待办，<span id="hudAlertCount" style="color:var(--red)">1</span> 项异常需处理</div>
+        <div class="hud-sub" id="hudSub">距离下一个里程碑还有 9 天</div>
+        <div class="hud-items">
+          <div class="hud-item" onclick="switchPanel('tasks')">
+            <div class="hi-label">待办任务</div>
+            <div class="hi-value" style="color:var(--accent)" id="hudTasks">2</div>
+            <div class="hi-meta">点击查看 →</div>
+          </div>
+          <div class="hud-item" onclick="switchPanel('cs')">
+            <div class="hi-label">危险客户</div>
+            <div class="hi-value" style="color:var(--red)" id="hudDanger">2</div>
+            <div class="hi-meta">需立即跟进</div>
+          </div>
+          <div class="hud-item" onclick="switchPanel('alerts')">
+            <div class="hi-label">待处理异常</div>
+            <div class="hi-value" style="color:var(--yellow)" id="hudAlerts">3</div>
+            <div class="hi-meta">1严重 · 2警告</div>
+          </div>
+          <div class="hud-item" onclick="switchPanel('decisions')">
+            <div class="hi-label">待记录决策</div>
+            <div class="hi-value" style="color:var(--green)" id="hudDecisions">0</div>
+            <div class="hi-meta">暂无</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Tasks -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title"><span class="emoji">📋</span> 今日任务</div>
+          <button class="btn btn-ghost" style="font-size:11px" onclick="openModal('addTask')">+ 添加</button>
+        </div>
+        <div id="todayTaskList"></div>
+      </div>
+
+      <!-- Today's Alerts -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title"><span class="emoji">🚨</span> 今日异常</div>
+          <span class="badge badge-red">1 严重</span>
+        </div>
+        <div id="todayAlertList"></div>
+      </div>
+
+      <!-- Milestone Strip -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title"><span class="emoji">🏁</span> 里程碑</div>
+          <button class="btn btn-ghost" style="font-size:11px" onclick="switchPanel('milestone')">查看全部 →</button>
+        </div>
+        <div class="milestone-track" id="todayMilestones"></div>
+      </div>
+
+      <!-- Recent Decisions -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title"><span class="emoji">⚖️</span> 最近决策</div>
+          <button class="btn btn-ghost" style="font-size:11px" onclick="switchPanel('decisions')">查看全部 →</button>
+        </div>
+        <div id="todayDecisionList"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════ WEEK ══════════════ -->
+    <div class="panel" id="panel-week">
+      <div class="section-header">
+        <div class="section-title"><span class="emoji">📅</span> 本周概览</div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="cc-title">本周任务完成趋势</div>
+          <div class="chart-wrap"><canvas id="cWeekTasks"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-title">本周异常处理</div>
+          <div class="chart-wrap"><canvas id="cWeekAlerts"></canvas></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title" style="margin-bottom:12px"><span class="emoji">📅</span> 本周任务清单</div>
+        <div id="weekTaskList"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════ TASKS ══════════════ -->
+    <div class="panel" id="panel-tasks">
+      <div class="section-header">
+        <div class="section-title"><span class="emoji">📋</span> 任务中心</div>
+        <button class="btn btn-primary" style="font-size:12px" onclick="openModal('addTask')">+ 新任务</button>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all" onclick="filterTasks('all')">全部</button>
+        <button class="filter-btn" data-filter="active" onclick="filterTasks('active')">进行中</button>
+        <button class="filter-btn" data-filter="blocked" onclick="filterTasks('blocked')">已阻塞</button>
+        <button class="filter-btn" data-filter="done" onclick="filterTasks('done')">已完成</button>
+        <button class="filter-btn" data-filter="mine" onclick="filterTasks('mine')">我的</button>
+      </div>
+      <div id="taskList"></div>
+    </div>
+
+    <!-- ══════════════ MILESTONE ══════════════ -->
+    <div class="panel" id="panel-milestone">
+      <div class="section-header">
+        <div class="section-title"><span class="emoji">🏁</span> 里程碑追踪</div>
+      </div>
+      <div class="chart-card" style="margin-bottom:14px">
+        <div class="cc-title">6月目标进度</div>
+        <div class="chart-wrap"><canvas id="cMilestone"></canvas></div>
+      </div>
+      <div id="milestoneList"></div>
+    </div>
+
+    <!-- ══════════════ CS ══════════════ -->
+    <div class="panel" id="panel-cs">
+      <div class="section-header">
+        <div class="section-title"><span class="emoji">💎</span> 客户成功</div>
+        <span class="badge badge-red" id="csDangerBadge">2 危险客户</span>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="cc-title">客户健康分布</div>
+          <div class="chart-wrap"><canvas id="cCSHealth"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="cc-title">健康分趋势</div>
+          <div class="chart-wrap"><canvas id="cCSTrend"></canvas></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title" style="margin-bottom:12px"><span class="emoji">🚨</span> 危险客户</div>
+        <div id="csDangerList"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" style="margin-bottom:12px"><span class="emoji">📋</span> 全量客户</div>
+        <div id="csFullList"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════ OUTSOURCE ══════════════ -->
+    <div class="panel" id="panel-outsource">
+      <div class="section-header">
+        <div class="section-title"><span class="emoji">🔧</span> 外包管理</div>
+        <span class="badge badge-yellow">1 关注项</span>
+      </div>
+      <div id="outsourceList"></div>
+    </div>
+
+    <!-- ══════════════ CERT ══════════════ -->
+    <div class="panel" id="panel-cert">
+      <div class="section-header">
+        <div class="section-title"><span class="emoji">🎓</span> 认证体系</div>
+      </div>
+      <div id="certList"></div>
+    </div>
+
+    <!-- ══════════════ DECISIONS ══════════════ -->
+    <div class="panel" id="panel-decisions">
+      <div class="section-header">
+        <div class="section-title"><span class="emoji">⚖️</span> 决策日志</div>
+        <button class="btn btn-primary" style="font-size:12px" onclick="openModal('addDecision')">+ 记录决策</button>
+      </div>
+      <div id="decisionList"></div>
+    </div>
+
+    <!-- ══════════════ ALERTS ══════════════ -->
+    <div class="panel" id="panel-alerts">
+      <div class="section-header">
+        <div class="section-title"><span class="emoji">🚨</span> 异常中心</div>
+        <span class="badge badge-red" id="alertBadge">3 待处理</span>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" data-afilter="all" onclick="filterAlerts('all')">全部</button>
+        <button class="filter-btn" data-afilter="critical" onclick="filterAlerts('critical')">严重</button>
+        <button class="filter-btn" data-afilter="warning" onclick="filterAlerts('warning')">警告</button>
+        <button class="filter-btn" data-afilter="resolved" onclick="filterAlerts('resolved')">已解决</button>
+      </div>
+      <div id="alertList"></div>
+    </div>
+
+    <!-- ══════════════ SETTINGS ══════════════ -->
+    <div class="panel" id="panel-settings">
+      <div class="section-header">
+        <div class="section-title"><span class="emoji">⚙️</span> 数据配置</div>
+      </div>
+      <div class="settings-grid" style="margin-bottom:16px">
+        <div class="settings-item">
+          <div class="si-label">当前版本</div>
+          <div class="si-value">v3.0 · 指挥官中心</div>
+        </div>
+        <div class="settings-item">
+          <div class="si-label">数据存储</div>
+          <div class="si-value">localStorage（本地）</div>
+        </div>
+        <div class="settings-item">
+          <div class="si-label">最后保存</div>
+          <div class="si-value" id="lastSaved">--</div>
+        </div>
+        <div class="settings-item">
+          <div class="si-label">数据版本</div>
+          <div class="si-value">示例数据 v1</div>
+        </div>
+      </div>
+      <div class="settings-item" style="margin-bottom:14px">
+        <div class="si-label">下一步（真实数据接入）</div>
+        <div class="si-value" style="font-size:13px;color:var(--text-dim);font-weight:400;margin-top:4px">
+          1. 将示例数据替换为真实数据<br>
+          2. 接 Notion API 自动同步任务/客户数据<br>
+          3. 接飞书表格自动同步外包评分<br>
+          4. 部署到独立域名（如 delivery.aimi.com）
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="exportData()">📤 导出数据</button>
+        <button class="btn btn-ghost" onclick="openModal('importData')">📥 导入数据</button>
+        <button class="btn btn-ghost" onclick="resetData()" style="color:var(--red);border-color:var(--red)">🗑 重置全部</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
 
 <!-- ════════════════════════════════════════
-     PANEL 1: 指挥官总览
+     MODALS
 ════════════════════════════════════════ -->
-<div class="panel active" id="p-panel">
-
-  <!-- Next Action Banner -->
-  <div class="next-action">
-    <div class="na-icon">👉</div>
-    <div class="na-content">
-      <div class="na-label">下一步关键动作</div>
-      <div class="na-title">完成《外包SOP文档 v1.0》初稿</div>
-      <div class="na-meta">负责人：K · 截止：本周五 · 状态：进行中</div>
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <!-- ADD TASK -->
+  <div class="modal" id="modal-addTask">
+    <div class="modal-header">
+      <div class="modal-title">新建任务</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
     </div>
-    <button class="na-btn">更新状态 →</button>
-  </div>
-
-  <!-- KPI Row -->
-  <div class="kpi-row">
-    <div class="kpi-card">
-      <div class="kpi-label">交付体系整体进度</div>
-      <div class="kpi-value" style="color:var(--accent)">42%</div>
-      <div class="prog"><div class="prog-fill b" style="width:42%"></div></div>
-      <div class="kpi-sub">6大工作流 · 2项已完成</div>
+    <div class="modal-field">
+      <label>任务名称 *</label>
+      <input id="t-name" placeholder="例：完成外包SOP文档 v1.0初稿">
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">服务客户总数</div>
-      <div class="kpi-value" style="color:var(--text-bright)">247</div>
-      <div class="kpi-sub"><span class="up">+12</span> 本月新增</div>
+    <div class="modal-field">
+      <label>所属工作流</label>
+      <select id="t-workflow">
+        <option value="cs">CS中台搭建</option>
+        <option value="sop">外包SOP落地</option>
+        <option value="qc">质检体系搭建</option>
+        <option value="cert">认证体系设计</option>
+        <option value="pilot">试点客户验证</option>
+        <option value="channel">渠道培训认证</option>
+        <option value="other">其他</option>
+      </select>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">客户健康分均值</div>
-      <div class="kpi-value" style="color:var(--green)">84</div>
-      <div class="kpi-sub"><span class="up">↑3</span> vs 上月</div>
+    <div class="modal-field">
+      <label>负责人</label>
+      <select id="t-owner">
+        <option value="K">K</option>
+        <option value="CS-李明">CS-李明</option>
+        <option value="CS-王芳">CS-王芳</option>
+        <option value="待分配">待分配</option>
+      </select>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">外包产能利用率</div>
-      <div class="kpi-value" style="color:var(--yellow)">76%</div>
-      <div class="kpi-sub">警戒线 85%</div>
+    <div class="modal-field">
+      <label>截止日期</label>
+      <input id="t-date" type="date">
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">本月续费率</div>
-      <div class="kpi-value" style="color:var(--green)">91%</div>
-      <div class="kpi-sub"><span class="up">↑4%</span> vs 上月</div>
+    <div class="modal-field">
+      <label>优先级</label>
+      <select id="t-priority">
+        <option value="high">高</option>
+        <option value="med">中</option>
+        <option value="low">低</option>
+      </select>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">待处理异常</div>
-      <div class="kpi-value" style="color:var(--red)">3</div>
-      <div class="kpi-sub"><span class="danger">需关注</span></div>
+    <div class="modal-field">
+      <label>描述（可选）</label>
+      <textarea id="t-desc" placeholder="补充说明..."></textarea>
     </div>
-  </div>
-
-  <!-- Main charts -->
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">📊 整体进度趋势</div>
-        <span class="tag tag-blue">近6个月</span>
-      </div>
-      <div class="card-body">
-        <div class="chart-wrap"><canvas id="c1"></canvas></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🏆 里程碑追踪</div>
-        <span class="tag tag-green">6月目标</span>
-      </div>
-      <div class="card-body">
-        <div class="milestone-row" id="milestoneRow"></div>
-      </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="addTask()">保存任务</button>
     </div>
   </div>
 
-  <!-- Sub-grid -->
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🚨 最新异常</div>
-        <span class="tag tag-red">3项待处理</span>
-      </div>
-      <div class="card-body">
-        <div class="alert-item">
-          <div class="alert-icon critical">!</div>
-          <div class="alert-body">
-            <div class="alert-title">长沙外包质检分降至78%</div>
-            <div class="alert-desc">触发关注线（&lt;80%），本周抽检12个工单，3个不合格</div>
-            <div class="alert-meta"><span>📍 长沙外包A组</span><span>🕐 5月27日</span><span>👤 待CS负责人跟进</span></div>
-          </div>
-        </div>
-        <div class="alert-item">
-          <div class="alert-icon warning">⚠</div>
-          <div class="alert-body">
-            <div class="alert-title">深圳XX科技健康分危险（52分）</div>
-            <div class="alert-desc">连续2周下降，CS已介入，3日内需完成客户沟通</div>
-            <div class="alert-meta"><span>📍 客户成功</span><span>🕐 5月26日</span><span>👤 CS-李明</span></div>
-          </div>
-        </div>
-        <div class="alert-item">
-          <div class="alert-icon info">i</div>
-          <div class="alert-body">
-            <div class="alert-title">渠道首批10个客户已分配交付</div>
-            <div class="alert-desc">已路由至北京外包A组，正常推进中</div>
-            <div class="alert-meta"><span>📍 渠道合作</span><span>🕐 5月25日</span></div>
-          </div>
-        </div>
-      </div>
+  <!-- ADD ALERT -->
+  <div class="modal" id="modal-addAlert">
+    <div class="modal-header">
+      <div class="modal-title">记录异常</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
     </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🎯 6月里程碑预览</div>
-      </div>
-      <div class="card-body">
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
-            <div>
-              <div style="font-size:13px;font-weight:600;color:var(--text-bright)">SOP文档v1.0完成</div>
-              <div style="font-size:11px;color:var(--text-dim)">外包交付标准体系化</div>
-            </div>
-            <span class="tag tag-green">已完成</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
-            <div>
-              <div style="font-size:13px;font-weight:600;color:var(--text-bright)">CS中台3人到位</div>
-              <div style="font-size:11px;color:var(--text-dim)">负责人+外包管理+产品反馈</div>
-            </div>
-            <span class="tag tag-yellow">进行中</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
-            <div>
-              <div style="font-size:13px;font-weight:600;color:var(--text-bright)">质检体系上线</div>
-              <div style="font-size:11px;color:var(--text-dim)">自动化抽检 + 评分系统</div>
-            </div>
-            <span class="tag tag-blue">待启动</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
-            <div>
-              <div style="font-size:13px;font-weight:600;color:var(--text-bright)">渠道认证培训第一期</div>
-              <div style="font-size:11px;color:var(--text-dim)">集团子公司交付人员认证</div>
-            </div>
-            <span class="tag tag-blue">待启动</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
-            <div>
-              <div style="font-size:13px;font-weight:600;color:var(--text-bright)">试点客户100家</div>
-              <div style="font-size:11px;color:var(--text-dim)">全流程跑通验证</div>
-            </div>
-            <span class="tag tag-blue">待启动</span>
-          </div>
-        </div>
-      </div>
+    <div class="modal-field">
+      <label>异常标题 *</label>
+      <input id="a-title" placeholder="例：长沙外包质检分降至78%">
+    </div>
+    <div class="modal-field">
+      <label>严重程度</label>
+      <select id="a-severity">
+        <option value="critical">严重</option>
+        <option value="warning">警告</option>
+        <option value="info">通知</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>负责人</label>
+      <input id="a-owner" placeholder="谁处理？">
+    </div>
+    <div class="modal-field">
+      <label>描述</label>
+      <textarea id="a-desc" placeholder="异常详情..."></textarea>
+    </div>
+    <div class="modal-field">
+      <label>处理方案</label>
+      <textarea id="a-action" placeholder="下一步行动..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="addAlert()">记录异常</button>
+    </div>
+  </div>
+
+  <!-- ADD DECISION -->
+  <div class="modal" id="modal-addDecision">
+    <div class="modal-header">
+      <div class="modal-title">记录决策</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-field">
+      <label>决策标题 *</label>
+      <input id="d-title" placeholder="例：确认不建自营交付团队，改建3-5人标准中台">
+    </div>
+    <div class="modal-field">
+      <label>决策日期</label>
+      <input id="d-date" type="date">
+    </div>
+    <div class="modal-field">
+      <label>决策人</label>
+      <input id="d-owner" placeholder="谁做的决策？">
+    </div>
+    <div class="modal-field">
+      <label>决策说明</label>
+      <textarea id="d-desc" placeholder="背景和结论..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="addDecision()">保存决策</button>
+    </div>
+  </div>
+
+  <!-- IMPORT DATA -->
+  <div class="modal" id="modal-importData">
+    <div class="modal-header">
+      <div class="modal-title">导入数据</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-field">
+      <label>粘贴 JSON 数据</label>
+      <textarea id="import-json" placeholder="将导出的 JSON 数据粘贴到这里..." style="min-height:150px;font-size:11px;font-family:monospace"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="importData()">导入</button>
     </div>
   </div>
 </div>
-
-<!-- ════════════════════════════════════════
-     PANEL 2: 实施路线图
-════════════════════════════════════════ -->
-<div class="panel" id="roadmap-panel">
-  <div class="kpi-row">
-    <div class="kpi-card">
-      <div class="kpi-label">总任务数</div>
-      <div class="kpi-value" style="color:var(--accent)">24</div>
-      <div class="kpi-sub">6大工作流</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">已完成</div>
-      <div class="kpi-value" style="color:var(--green)">6</div>
-      <div class="kpi-sub"><span class="up">25%</span></div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">进行中</div>
-      <div class="kpi-value" style="color:var(--yellow)">8</div>
-      <div class="kpi-sub">关键路径</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">已阻塞</div>
-      <div class="kpi-value" style="color:var(--red)">2</div>
-      <div class="kpi-sub">需立即处理</div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:14px">
-    <div class="card-header">
-      <div class="card-title">📅 6大工作流时间线</div>
-      <span class="tag tag-blue">Q2 2026</span>
-    </div>
-    <div class="card-body">
-      <div class="timeline" id="timeline"></div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🎯 6月关键里程碑</div>
-      </div>
-      <div class="card-body">
-        <div class="milestone-row" style="padding:0;margin:0">
-          <div class="milestone">
-            <div class="milestone-dot done"></div>
-            <div class="milestone-label">方案锁定</div>
-            <div style="font-size:10px;color:var(--green);margin-top:2px">5/28</div>
-          </div>
-          <div class="milestone">
-            <div class="milestone-dot active"></div>
-            <div class="milestone-label">SOP完成</div>
-            <div style="font-size:10px;color:var(--accent);margin-top:2px">6/6</div>
-          </div>
-          <div class="milestone">
-            <div class="milestone-dot pending"></div>
-            <div class="milestone-label">CS中台就位</div>
-            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">6/13</div>
-          </div>
-          <div class="milestone">
-            <div class="milestone-dot pending"></div>
-            <div class="milestone-label">质检上线</div>
-            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">6/20</div>
-          </div>
-          <div class="milestone">
-            <div class="milestone-dot pending"></div>
-            <div class="milestone-label">试点启动</div>
-            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">6/27</div>
-          </div>
-          <div class="milestone">
-            <div class="milestone-dot pending"></div>
-            <div class="milestone-label">渠道培训</div>
-            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">7/4</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">⚠️ 风险与依赖</div>
-      </div>
-      <div class="card-body">
-        <div class="alert-item">
-          <div class="alert-icon warning">⚠</div>
-          <div class="alert-body">
-            <div class="alert-title">CS负责人招聘可能超期</div>
-            <div class="alert-desc">期望6/13到位，JD已发，预计筛选周期2-3周，有3-5天风险</div>
-            <div class="alert-meta"><span>📍 人才招聘</span><span>影响：CS中台搭建</span></div>
-          </div>
-        </div>
-        <div class="alert-item">
-          <div class="alert-icon warning">⚠</div>
-          <div class="alert-body">
-            <div class="alert-title">长沙外包质量不稳定</div>
-            <div class="alert-desc">本周质检分降至78%，需在SOP完成前完成一轮整改沟通</div>
-            <div class="alert-meta"><span>📍 外包管理</span><span>影响：渠道客户交付质量</span></div>
-          </div>
-        </div>
-        <div class="alert-item">
-          <div class="alert-icon info">i</div>
-          <div class="alert-body">
-            <div class="alert-title">渠道客户量超预期</div>
-            <div class="alert-desc">集团子公司首批10个客户已进，已在评估是否需要紧急扩容第三家外包商</div>
-            <div class="alert-meta"><span>📍 产能规划</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     PANEL 3: 任务中心
-════════════════════════════════════════ -->
-<div class="panel" id="tasks-panel">
-  <div class="sub-tabs">
-    <div class="sub-tab active" data-sub="all">全部 <span class="count count-blue">18</span></div>
-    <div class="sub-tab" data-sub="mine">我的任务 <span class="count count-blue">5</span></div>
-    <div class="sub-tab" data-sub="blocked">已阻塞 <span class="count count-red">2</span></div>
-    <div class="sub-tab" data-sub="done">已完成</div>
-  </div>
-  <div style="padding:14px 18px">
-    <div class="sub-panel active" id="sub-all">
-      <div class="task-item" style="font-weight:700;color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:6px 0">
-        <div>任务名称</div><div>状态</div><div>截止</div><div>负责人</div>
-      </div>
-      <div class="task-item">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="task-priority p-high"></div>
-          <div class="task-text"><div class="task-name">完成外包SOP文档 v1.0初稿</div><div class="task-meta">📍 CS中台搭建 · 第一步</div></div>
-        </div>
-        <div><span class="task-status status-active">● 进行中</span></div>
-        <div class="task-date">5月30日</div>
-        <div style="font-size:12px;color:var(--text-dim)">K</div>
-      </div>
-      <div class="task-item">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="task-priority p-high"></div>
-          <div class="task-text"><div class="task-name">完成质检体系设计方案</div><div class="task-meta">📍 质检体系 · 核心抓手</div></div>
-        </div>
-        <div><span class="task-status status-active">● 进行中</span></div>
-        <div class="task-date">6月3日</div>
-        <div style="font-size:12px;color:var(--text-dim)">K</div>
-      </div>
-      <div class="task-item">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="task-priority p-med"></div>
-          <div class="task-text"><div class="task-name">与长沙外包负责人完成整改沟通</div><div class="task-meta">📍 外包管理 · 紧急</div></div>
-        </div>
-        <div><span class="task-status status-blocked">✕ 已阻塞</span></div>
-        <div class="task-date">5月29日 ⚠️</div>
-        <div style="font-size:12px;color:var(--text-dim)">K</div>
-      </div>
-      <div class="task-item">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="task-priority p-med"></div>
-          <div class="task-text"><div class="task-name">确定CS负责人JD并发起招聘</div><div class="task-meta">📍 CS中台搭建 · 关键路径</div></div>
-        </div>
-        <div><span class="task-status status-done">✓ 已完成</span></div>
-        <div class="task-date">5月27日</div>
-        <div style="font-size:12px;color:var(--text-dim)">K</div>
-      </div>
-      <div class="task-item">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="task-priority p-med"></div>
-          <div class="task-text"><div class="task-name">与老板对齐「供应链操盘手」定位</div><div class="task-meta">📍 战略对齐 · 已完成</div></div>
-        </div>
-        <div><span class="task-status status-done">✓ 已完成</span></div>
-        <div class="task-date">5月28日</div>
-        <div style="font-size:12px;color:var(--text-dim)">K</div>
-      </div>
-      <div class="task-item">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="task-priority p-low"></div>
-          <div class="task-text"><div class="task-name">评估第三家外包商（备选：广州/深圳）</div><div class="task-meta">📍 外包生态 · 产能扩容</div></div>
-        </div>
-        <div><span class="task-status status-pending">○ 待启动</span></div>
-        <div class="task-date">6月10日</div>
-        <div style="font-size:12px;color:var(--text-dim)">待分配</div>
-      </div>
-      <div class="task-item">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="task-priority p-low"></div>
-          <div class="task-text"><div class="task-name">建立外包商评分卡（产能/质量/响应/配合）</div><div class="task-meta">📍 外包管理 · 核心抓手</div></div>
-        </div>
-        <div><span class="task-status status-pending">○ 待启动</span></div>
-        <div class="task-date">6月6日</div>
-        <div style="font-size:12px;color:var(--text-dim)">待分配</div>
-      </div>
-      <div class="task-item">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="task-priority p-low"></div>
-          <div class="task-text"><div class="task-name">渠道认证体系设计（含考核标准）</div><div class="task-meta">📍 认证体系 · 战略差异化</div></div>
-        </div>
-        <div><span class="task-status status-pending">○ 待启动</span></div>
-        <div class="task-date">6月15日</div>
-        <div style="font-size:12px;color:var(--text-dim)">待分配</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     PANEL 4: 客户成功
-════════════════════════════════════════ -->
-<div class="panel" id="cs-panel">
-  <div class="kpi-row">
-    <div class="kpi-card">
-      <div class="kpi-label">健康客户</div>
-      <div class="kpi-value" style="color:var(--green)">189</div>
-      <div class="kpi-sub">76% · ≥80分</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">关注客户</div>
-      <div class="kpi-value" style="color:var(--yellow)">47</div>
-      <div class="kpi-sub">19% · 60-79分</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">危险客户</div>
-      <div class="kpi-value" style="color:var(--red)">11</div>
-      <div class="kpi-sub">5% · &lt;60分</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">本月续费率</div>
-      <div class="kpi-value" style="color:var(--green)">91%</div>
-      <div class="kpi-sub"><span class="up">+4%</span> vs 上月</div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🚨 危险客户清单</div>
-        <span class="tag tag-red">需立即介入</span>
-      </div>
-      <div class="card-body" style="padding:0">
-        <table class="cs-table">
-          <thead>
-            <tr>
-              <th>客户名称</th><th>健康分</th><th>趋势</th><th>负责人</th><th>介入时间</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>深圳XX科技</td>
-              <td><span style="color:var(--red);font-weight:700">52</span></td>
-              <td><span style="color:var(--red)">↓ 8</span></td>
-              <td>CS-李明</td>
-              <td>3日内</td>
-            </tr>
-            <tr>
-              <td>杭州XX服饰</td>
-              <td><span style="color:var(--red);font-weight:700">58</span></td>
-              <td><span style="color:var(--yellow)">↓ 3</span></td>
-              <td>CS-待分配</td>
-              <td>本周</td>
-            </tr>
-            <tr>
-              <td>南京XX电商</td>
-              <td><span style="color:var(--yellow);font-weight:700">64</span></td>
-              <td><span style="color:var(--yellow)">↓ 5</span></td>
-              <td>CS-王芳</td>
-              <td>本周</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">📈 客户健康分分布</div>
-      </div>
-      <div class="card-body">
-        <div class="chart-wrap chart-wrap-sm"><canvas id="cHealth"></canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">📋 客户健康分明细</div>
-      <span class="tag tag-blue">全部客户</span>
-    </div>
-    <div class="card-body" style="padding:0">
-      <table class="cs-table">
-        <thead>
-          <tr>
-            <th>客户</th><th>健康分</th><th>趋势</th><th>最近活动</th><th>续约时间</th><th>增购信号</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>上海XX品牌</td>
-            <td><span style="color:var(--green);font-weight:700">96</span></td>
-            <td><span style="color:var(--green)">↑ 2</span></td>
-            <td>5/27 QBR完成</td>
-            <td>8月到期</td>
-            <td><span class="tag tag-green" style="font-size:10px">强</span></td>
-          </tr>
-          <tr>
-            <td>北京XX科技</td>
-            <td><span style="color:var(--green);font-weight:700">88</span></td>
-            <td><span style="color:var(--green)">↑ 1</span></td>
-            <td>5/25 策略review</td>
-            <td>9月到期</td>
-            <td><span class="tag tag-blue" style="font-size:10px">中</span></td>
-          </tr>
-          <tr>
-            <td>广州XX贸易</td>
-            <td><span style="color:var(--yellow);font-weight:700">72</span></td>
-            <td><span style="color:var(--yellow)">↓ 4</span></td>
-            <td>5/20 策略调整</td>
-            <td>7月到期</td>
-            <td><span class="tag tag-yellow" style="font-size:10px">待观察</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     PANEL 5: 外包管理
-════════════════════════════════════════ -->
-<div class="panel" id="outsource-panel">
-  <div class="kpi-row">
-    <div class="kpi-card">
-      <div class="kpi-label">外包商总数</div>
-      <div class="kpi-value" style="color:var(--accent)">2</div>
-      <div class="kpi-sub">+1 待评估</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">总产能利用率</div>
-      <div class="kpi-value" style="color:var(--yellow)">76%</div>
-      <div class="kpi-sub">警戒线 85%</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">本月交付工单</div>
-      <div class="kpi-value" style="color:var(--text-bright)">183</div>
-      <div class="kpi-sub"><span class="up">+23</span> vs 上月</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">平均质检分</div>
-      <div class="kpi-value" style="color:var(--yellow)">81%</div>
-      <div class="kpi-sub"><span class="warn">↓2%</span> vs 上月</div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🏭 北京外包A组</div>
-        <span class="tag tag-green">良好</span>
-      </div>
-      <div class="card-body">
-        <div class="score-grid" style="margin-bottom:14px">
-          <div class="score-card">
-            <div class="sc-name">产能得分</div>
-            <div class="sc-score" style="color:var(--green)">88</div>
-            <div class="sc-bar"><div class="prog"><div class="prog-fill g" style="width:88%"></div></div></div>
-            <div class="sc-meta"><span>可承接量：充足</span></div>
-          </div>
-          <div class="score-card">
-            <div class="sc-name">质量得分</div>
-            <div class="sc-score" style="color:var(--green)">85</div>
-            <div class="sc-bar"><div class="prog"><div class="prog-fill g" style="width:85%"></div></div></div>
-            <div class="sc-meta"><span>本月抽检：100%合格</span></div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
-          <div style="background:var(--surface2);padding:10px;border-radius:6px">
-            <div style="color:var(--text-dim)">响应速度</div>
-            <div style="color:var(--green);font-weight:700;font-size:16px;margin-top:2px">优</div>
-          </div>
-          <div style="background:var(--surface2);padding:10px;border-radius:6px">
-            <div style="color:var(--text-dim)">配合度</div>
-            <div style="color:var(--green);font-weight:700;font-size:16px;margin-top:2px">优</div>
-          </div>
-          <div style="background:var(--surface2);padding:10px;border-radius:6px">
-            <div style="color:var(--text-dim)">当前工单</div>
-            <div style="color:var(--text-bright);font-weight:700;font-size:16px;margin-top:2px">42</div>
-          </div>
-          <div style="background:var(--surface2);padding:10px;border-radius:6px">
-            <div style="color:var(--text-dim)">月均可交付</div>
-            <div style="color:var(--text-bright);font-weight:700;font-size:16px;margin-top:2px">80单</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🏭 长沙外包B组</div>
-        <span class="tag tag-yellow">⚠ 关注</span>
-      </div>
-      <div class="card-body">
-        <div class="score-grid" style="margin-bottom:14px">
-          <div class="score-card">
-            <div class="sc-name">产能得分</div>
-            <div class="sc-score" style="color:var(--yellow)">72</div>
-            <div class="sc-bar"><div class="prog"><div class="prog-fill y" style="width:72%"></div></div></div>
-            <div class="sc-meta"><span>可承接量：紧张</span></div>
-          </div>
-          <div class="score-card">
-            <div class="sc-name">质量得分</div>
-            <div class="sc-score" style="color:var(--red)">78</div>
-            <div class="sc-bar"><div class="prog"><div class="prog-fill r" style="width:78%"></div></div></div>
-            <div class="sc-meta"><span>⚠ 低于80%警戒线</span></div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
-          <div style="background:var(--surface2);padding:10px;border-radius:6px">
-            <div style="color:var(--text-dim)">响应速度</div>
-            <div style="color:var(--yellow);font-weight:700;font-size:16px;margin-top:2px">良</div>
-          </div>
-          <div style="background:var(--surface2);padding:10px;border-radius:6px">
-            <div style="color:var(--text-dim)">配合度</div>
-            <div style="color:var(--yellow);font-weight:700;font-size:16px;margin-top:2px">良</div>
-          </div>
-          <div style="background:var(--surface2);padding:10px;border-radius:6px">
-            <div style="color:var(--text-dim)">当前工单</div>
-            <div style="color:var(--text-bright);font-weight:700;font-size:16px;margin-top:2px">31</div>
-          </div>
-          <div style="background:var(--surface2);padding:10px;border-radius:6px">
-            <div style="color:var(--text-dim)">月均可交付</div>
-            <div style="color:var(--text-bright);font-weight:700;font-size:16px;margin-top:2px">50单</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">📊 外包综合对比</div>
-    </div>
-    <div class="card-body">
-      <div class="chart-wrap"><canvas id="cOutsource"></canvas></div>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     PANEL 6: 认证体系
-════════════════════════════════════════ -->
-<div class="panel" id="cert-panel">
-  <div class="kpi-row">
-    <div class="kpi-card">
-      <div class="kpi-label">已认证外包商</div>
-      <div class="kpi-value" style="color:var(--green)">0</div>
-      <div class="kpi-sub">6月启动</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">渠道认证人员</div>
-      <div class="kpi-value" style="color:var(--accent)">0</div>
-      <div class="kpi-sub">待培训</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">认证课程完成率</div>
-      <div class="kpi-value" style="color:var(--text-dim)">--</div>
-      <div class="kpi-sub">尚未启动</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">持证交付比例</div>
-      <div class="kpi-value" style="color:var(--text-dim)">--</div>
-      <div class="kpi-sub">目标60%</div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🎓 认证体系设计（进行中）</div>
-        <span class="tag tag-yellow">起草版</span>
-      </div>
-      <div class="card-body">
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-size:13px;font-weight:600">L1 · 基础交付认证</div>
-              <div style="font-size:11px;color:var(--text-dim)">SOP执行标准 · 工具使用</div>
-            </div>
-            <span class="tag tag-blue" style="font-size:10px">即将上线</span>
-          </div>
-          <div class="prog"><div class="prog-fill b" style="width:60%"></div></div>
-          <div style="font-size:11px;color:var(--text-dim)">60% 完成</div>
-        </div>
-        <div style="height:12px"></div>
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-size:13px;font-weight:600">L2 · 策略交付认证</div>
-              <div style="font-size:11px;color:var(--text-dim)">数据分析 · 策略调整 · 客情维护</div>
-            </div>
-            <span class="tag tag-blue" style="font-size:10px">待开发</span>
-          </div>
-          <div class="prog"><div class="prog-fill b" style="width:20%"></div></div>
-          <div style="font-size:11px;color:var(--text-dim)">20% 完成</div>
-        </div>
-        <div style="height:12px"></div>
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-size:13px;font-weight:600">L3 · 高级CS认证</div>
-              <div style="font-size:11px;color:var(--text-dim)">QBR · 增购推动 · 战略对齐</div>
-            </div>
-            <span class="tag tag-blue" style="font-size:10px">待开发</span>
-          </div>
-          <div class="prog"><div class="prog-fill b" style="width:5%"></div></div>
-          <div style="font-size:11px;color:var(--text-dim)">5% 完成</div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">📋 认证标准（草案）</div>
-      </div>
-      <div class="card-body">
-        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
-          <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
-            <span style="color:var(--green);font-size:16px">✓</span>
-            <div>
-              <div style="font-weight:600">SOP完整执行</div>
-              <div style="font-size:11px;color:var(--text-dim)">所有交付节点按标准文档执行</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
-            <span style="color:var(--green);font-size:16px">✓</span>
-            <div>
-              <div style="font-weight:600">质检合格率 ≥ 90%</div>
-              <div style="font-size:11px;color:var(--text-dim)">连续3个月抽检合格率达到90%以上</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
-            <span style="color:var(--yellow);font-size:16px">◐</span>
-            <div>
-              <div style="font-weight:600">客户满意度 ≥ 85%</div>
-              <div style="font-size:11px;color:var(--text-dim)">季度客户满意度调研得分85分以上</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)">
-            <span style="color:var(--text-dim);font-size:16px">○</span>
-            <div>
-              <div style="font-weight:600">交付时效达标 ≥ 95%</div>
-              <div style="font-size:11px;color:var(--text-dim)">约定交付时间内完成的工单比例</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0">
-            <span style="color:var(--text-dim);font-size:16px">○</span>
-            <div>
-              <div style="font-weight:600">年审机制</div>
-              <div style="font-size:11px;color:var(--text-dim)">每年重新认证考核，不合格降级/取消</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     PANEL 7: 决策日志
-════════════════════════════════════════ -->
-<div class="panel" id="decisions-panel">
-  <div class="card" style="margin-bottom:14px">
-    <div class="card-header">
-      <div class="card-title">⚖️ 关键决策记录</div>
-      <button style="background:var(--surface3);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer">+ 记录新决策</button>
-    </div>
-    <div class="card-body">
-      <div class="decision-item">
-        <div class="decision-date">5/28</div>
-        <div class="decision-text">
-          <div class="d-title">定位确认：供应链操盘手，不做交付执行</div>
-          <div class="d-desc">与老板对齐——自建交付团队改为「交付标准中台」，三块结构：CS中台 + 外包生态 + 认证体系</div>
-        </div>
-        <div class="decision-owner">K</div>
-      </div>
-      <div class="decision-item">
-        <div class="decision-date">5/27</div>
-        <div class="decision-text">
-          <div class="d-title">不建自营交付，改建3-5人标准中台</div>
-          <div class="d-desc">老板原方案「自建交付团队做备份」升级为「标准+抓手+供应商管理」中台，成本降低但控制力更强</div>
-        </div>
-        <div class="decision-owner">K+老板</div>
-      </div>
-      <div class="decision-item">
-        <div class="decision-date">5/25</div>
-        <div class="decision-text">
-          <div class="d-title">渠道首批客户由北京外包A组承接</div>
-          <div class="d-desc">长沙外包B组因质量不稳定，渠道客户优先分配给北京外包，待长沙整改完成后再评估</div>
-        </div>
-        <div class="decision-owner">K</div>
-      </div>
-      <div class="decision-item">
-        <div class="decision-date">5/20</div>
-        <div class="decision-text">
-          <div class="d-title">外包生态定位：产能池而非供应商</div>
-          <div class="d-desc">北京/长沙定义为「可替换产能单元」，不是长期合作伙伴——随时可以扩容替换，核心控制在标准层</div>
-        </div>
-        <div class="decision-owner">K</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     PANEL 8: 异常中心
-════════════════════════════════════════ -->
-<div class="panel" id="alerts-panel">
-  <div class="kpi-row">
-    <div class="kpi-card">
-      <div class="kpi-label">总异常数</div>
-      <div class="kpi-value" style="color:var(--yellow)">3</div>
-      <div class="kpi-sub">2处理中 · 1已升级</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">严重</div>
-      <div class="kpi-value" style="color:var(--red)">1</div>
-      <div class="kpi-sub">需立即处理</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">警告</div>
-      <div class="kpi-value" style="color:var(--yellow)">2</div>
-      <div class="kpi-sub">本周关注</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">已解决</div>
-      <div class="kpi-value" style="color:var(--green)">7</div>
-      <div class="kpi-sub">本月累计</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">🚨 异常明细</div>
-      <span class="tag tag-red">严重 1</span>
-    </div>
-    <div class="card-body">
-      <div class="alert-item">
-        <div class="alert-icon critical">!</div>
-        <div class="alert-body">
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
-            <div class="alert-title">长沙外包B组质检分降至78%</div>
-            <span class="tag tag-red" style="font-size:9px">严重</span>
-            <span class="tag tag-yellow" style="font-size:9px">升级</span>
-          </div>
-          <div class="alert-desc">本周抽检12个工单，3个不合格。长沙外包已连续2周质量下滑。</div>
-          <div class="alert-meta">
-            <span>📍 外包：长沙B组</span>
-            <span>🕐 触发时间：5月27日</span>
-            <span>👤 负责人：K</span>
-            <span>📌 状态：升级处理中</span>
-          </div>
-          <div style="margin-top:8px;padding:8px 12px;background:var(--red-dim);border-radius:6px;font-size:12px;color:var(--red)">
-            ⚠ 下一步：本周内约谈长沙外包负责人，制定整改计划；若2周内无改善，启动替换评估
-          </div>
-        </div>
-      </div>
-      <div class="alert-item">
-        <div class="alert-icon warning">⚠</div>
-        <div class="alert-body">
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
-            <div class="alert-title">深圳XX科技健康分危险（52分）</div>
-            <span class="tag tag-yellow" style="font-size:9px">警告</span>
-          </div>
-          <div class="alert-desc">客户连续2周健康分下滑，CS已介入，3日内需完成客户沟通确认问题根因。</div>
-          <div class="alert-meta">
-            <span>📍 客户成功</span>
-            <span>🕐 触发时间：5月26日</span>
-            <span>👤 负责人：CS-李明</span>
-            <span>📌 状态：处理中</span>
-          </div>
-        </div>
-      </div>
-      <div class="alert-item">
-        <div class="alert-icon warning">⚠</div>
-        <div class="alert-body">
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
-            <div class="alert-title">渠道首批客户量超预期，产能预警</div>
-            <span class="tag tag-yellow" style="font-size:9px">警告</span>
-          </div>
-          <div class="alert-desc">集团子公司首批10个客户已进入交付，若后续渠道持续放量，当前外包产能（130单/月）可能达到警戒线。</div>
-          <div class="alert-meta">
-            <span>📍 产能规划</span>
-            <span>🕐 触发时间：5月25日</span>
-            <span>👤 负责人：待分配</span>
-            <span>📌 状态：监控中</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">✅ 本月已解决异常</div>
-    </div>
-    <div class="card-body">
-      <div class="alert-item">
-        <div class="alert-icon success">✓</div>
-        <div class="alert-body">
-          <div class="alert-title">北京外包A组响应速度下降</div>
-          <div class="alert-desc">5月第三周响应速度评分从92分降至81分。经沟通系人员调动，已于5月22日恢复。</div>
-          <div class="alert-meta"><span>📍 北京外包A组</span><span>🕐 解决时间：5月22日</span><span>👤 负责人：K</span></div>
-        </div>
-      </div>
-      <div class="alert-item">
-        <div class="alert-icon success">✓</div>
-        <div class="alert-body">
-          <div class="alert-title">渠道客户首批对接流程未跑通</div>
-          <div class="alert-desc">首批渠道客户分配时SOP未就位，导致路由混乱。已补充「渠道客户接入SOP v0.5」并完成交接。</div>
-          <div class="alert-meta"><span>📍 流程规范</span><span>🕐 解决时间：5月23日</span><span>👤 负责人：K</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-</div><!-- /content -->
 
 <script>
-// ── Clock ──
+// ═══════════════════════════════════════════
+// DATA STORE
+// ═══════════════════════════════════════════
+const WORKFLOW_NAMES = {
+  cs:'CS中台搭建',sop:'外包SOP落地',qc:'质检体系搭建',
+  cert:'认证体系设计',pilot:'试点客户验证',channel:'渠道培训认证',other:'其他'
+};
+
+const WORKFLOW_COLORS = {
+  cs:'#4f8ef7',sop:'#34c759',qc:'#f5a623',
+  cert:'#af52de',pilot:'#32d4de',channel:'#ff453a',other:'#5a6478'
+};
+
+const DEFAULT_DATA = {
+  tasks:[
+    {id:'t1',name:'完成外包SOP文档 v1.0初稿',workflow:'sop',owner:'K',date:'2026-05-30',priority:'high',status:'active',desc:'包含交付标准、质检规范、异常处理流程'},
+    {id:'t2',name:'完成质检体系设计方案',workflow:'qc',owner:'K',date:'2026-06-03',priority:'high',status:'active',desc:'抽检比例、自动告警规则、评分体系'},
+    {id:'t3',name:'与长沙外包负责人完成整改沟通',workflow:'sop',owner:'K',date:'2026-05-29',priority:'high',status:'blocked',desc:'本周质检分降至78%，需约谈整改'},
+    {id:'t4',name:'确定CS负责人JD并发起招聘',workflow:'cs',owner:'K',date:'2026-05-27',priority:'med',status:'done',desc:'CS中台核心岗位，JD已确认'},
+    {id:'t5',name:'与老板对齐「供应链操盘手」定位',workflow:'cs',owner:'K',date:'2026-05-28',priority:'med',status:'done',desc:'老板认可新定位，方案已通过'},
+    {id:'t6',name:'评估第三家外包商（备选：广州/深圳）',workflow:'sop',owner:'K',date:'2026-06-10',priority:'low',status:'pending',desc:'应对渠道上量后的产能扩容需求'},
+    {id:'t7',name:'建立外包商评分卡',workflow:'sop',owner:'K',date:'2026-06-06',priority:'med',status:'pending',desc:'产能/质量/响应/配合四个维度'},
+    {id:'t8',name:'渠道认证体系设计（含考核标准）',workflow:'cert',owner:'待定',date:'2026-06-15',priority:'low',status:'pending',desc:'L1/L2/L3三级认证体系'},
+    {id:'t9',name:'试点客户名单确认（前10家）',workflow:'pilot',owner:'CS-李明',date:'2026-06-18',priority:'med',status:'pending',desc:'全流程跑通验证'},
+    {id:'t10',name:'CS Onboarding流程设计',workflow:'cs',owner:'CS-李明',date:'2026-06-10',priority:'med',status:'pending',desc:'新客户上手指引SOP'},
+    {id:'t11',name:'深圳XX科技客户健康分拯救计划',workflow:'cs',owner:'CS-李明',date:'2026-05-30',priority:'high',status:'active',desc:'健康分52，连续下降，需3日内完成沟通'},
+    {id:'t12',name:'渠道客户接入SOP v0.5完成',workflow:'channel',owner:'K',date:'2026-05-23',priority:'med',status:'done',desc:'首批渠道客户已按此SOP完成分配'},
+  ],
+  alerts:[
+    {id:'a1',title:'长沙外包B组质检分降至78%',severity:'critical',owner:'K',date:'2026-05-27',status:'active',desc:'本周抽检12个工单，3个不合格，连续2周下滑',action:'本周内约谈负责人，2周内整改否则替换'},
+    {id:'a2',title:'深圳XX科技健康分危险（52分）',severity:'warning',owner:'CS-李明',date:'2026-05-26',status:'active',desc:'客户连续2周下降，CS已介入',action:'3日内完成客户沟通确认根因'},
+    {id:'a3',title:'渠道首批客户量超预期，产能预警',severity:'warning',owner:'待分配',date:'2026-05-25',status:'monitoring',desc:'首批10个客户已进入，当前外包产能130单/月',action:'评估第三家外包商，6月中旬前完成尽职调查'},
+    {id:'a4',title:'北京外包A组响应速度下降',severity:'info',owner:'K',date:'2026-05-20',status:'resolved',desc:'第3周响应速度评分从92降至81',action:'已沟通，5月22日恢复'},
+    {id:'a5',title:'渠道客户首批对接流程未跑通',severity:'info',owner:'K',date:'2026-05-22',status:'resolved',desc:'SOP未就位导致路由混乱',action:'已补充渠道客户接入SOP v0.5'},
+  ],
+  decisions:[
+    {id:'d1',title:'定位确认：供应链操盘手，不做交付执行',owner:'K',date:'2026-05-28',desc:'与老板对齐——自建交付团队改为「交付标准中台」，三块结构：CS中台 + 外包生态 + 认证体系'},
+    {id:'d2',title:'不建自营交付，改建3-5人标准中台',owner:'K+老板',date:'2026-05-27',desc:'老板原方案「自建交付团队做备份」升级为「标准+抓手+供应商管理」中台'},
+    {id:'d3',title:'渠道首批客户由北京外包A组承接',owner:'K',date:'2026-05-25',desc:'长沙外包B组因质量不稳定，渠道客户优先分配给北京外包'},
+    {id:'d4',title:'外包生态定位：产能池而非供应商',owner:'K',date:'2026-05-20',desc:'北京/长沙定义为「可替换产能单元」，核心控制在标准层'},
+  ],
+  milestones:[
+    {id:'m1',name:'方案锁定',date:'2026-05-28',status:'done'},
+    {id:'m2',name:'SOP完成',date:'2026-06-06',status:'active'},
+    {id:'m3',name:'CS中台就位',date:'2026-06-13',status:'pending'},
+    {id:'m4',name:'质检上线',date:'2026-06-20',status:'pending'},
+    {id:'m5',name:'试点启动',date:'2026-06-27',status:'pending'},
+    {id:'m6',name:'渠道培训',date:'2026-07-04',status:'pending'},
+  ],
+  csClients:[
+    {id:'c1',name:'深圳XX科技',health:52,trend:-8,lastActivity:'策略调整后效果差',renewal:'8月',signal:'弱',owner:'CS-李明',tier:'danger'},
+    {id:'c2',name:'杭州XX服饰',health:58,trend:-3,lastActivity:'停用2周',renewal:'7月',signal:'弱',owner:'待分配',tier:'danger'},
+    {id:'c3',name:'南京XX电商',health:64,trend:-5,lastActivity:'ROI下降',renewal:'9月',signal:'中',owner:'CS-王芳',tier:'warning'},
+    {id:'c4',name:'广州XX贸易',health:72,trend:-4,lastActivity:'策略调整',renewal:'7月',signal:'待观察',owner:'CS-王芳',tier:'warning'},
+    {id:'c5',name:'上海XX品牌',health:96,trend:2,lastActivity:'QBR完成',renewal:'8月',signal:'强',owner:'CS-李明',tier:'healthy'},
+    {id:'c6',name:'北京XX科技',health:88,trend:1,lastActivity:'策略review',renewal:'9月',signal:'中',owner:'CS-王芳',tier:'healthy'},
+  ],
+  outsource:[
+    {id:'o1',name:'北京外包A组',status:'good',capacity:80,used:42,util:53,quality:85,response:92,cooperation:90,price:75,stability:88,notes:'当前主力，渠道客户优先分配'},
+    {id:'o2',name:'长沙外包B组',status:'warning',capacity:50,used:31,util:62,quality:78,response:70,cooperation:72,price:80,stability:65,notes:'质量下滑，本周需约谈整改'},
+  ],
+  certLevels:[
+    {id:'l1',name:'L1 · 基础交付认证',desc:'SOP执行标准·工具使用',progress:60,status:'ready'},
+    {id:'l2',name:'L2 · 策略交付认证',desc:'数据分析·策略调整·客情维护',progress:20,status:'dev'},
+    {id:'l3',name:'L3 · 高级CS认证',desc:'QBR·增购推动·战略对齐',progress:5,status:'dev'},
+  ]
+};
+
+// Load or init
+let DATA = JSON.parse(localStorage.getItem('amy_cmd_v3') || 'null') || JSON.parse(JSON.stringify(DEFAULT_DATA));
+let currentFilter = 'all';
+let currentAlertFilter = 'all';
+
+function save(){localStorage.setItem('amy_cmd_v3',JSON.stringify(DATA));}
+function saveAll(){
+  save();
+  document.getElementById('lastSaved').textContent = new Date().toLocaleTimeString('zh-CN');
+  showToast('💾 已保存');
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function render(){
+  renderTodayTasks();
+  renderTodayAlerts();
+  renderMilestones();
+  renderDecisions();
+  renderTasks();
+  renderWeekView();
+  renderMilestonePanel();
+  renderCS();
+  renderOutsource();
+  renderCert();
+  renderAlerts();
+  updateCounters();
+}
+
+function updateCounters(){
+  const active = DATA.tasks.filter(t=>t.status==='active'||t.status==='blocked').length;
+  const danger = DATA.csClients.filter(c=>c.tier==='danger').length;
+  const alerts = DATA.alerts.filter(a=>a.status==='active'||a.status==='monitoring').length;
+  const today = DATA.tasks.filter(t=>t.status==='active'&&(t.date===todayStr()||t.date<todayStr())).length;
+  const week = DATA.tasks.filter(t=>t.status==='active').length;
+  document.getElementById('cntToday').textContent = today || '';
+  document.getElementById('cntWeek').textContent = week;
+  document.getElementById('cntTasks').textContent = DATA.tasks.length;
+  document.getElementById('cntDanger').textContent = danger || '';
+  document.getElementById('cntAlerts').textContent = alerts || '';
+  document.getElementById('hudTaskCount').textContent = active;
+  document.getElementById('hudTasks').textContent = active;
+  document.getElementById('hudDanger').textContent = danger;
+  document.getElementById('hudAlertCount').textContent = DATA.alerts.filter(a=>a.status==='active').length;
+  document.getElementById('hudAlerts').textContent = DATA.alerts.filter(a=>a.status==='active'||a.status==='monitoring').length;
+  document.getElementById('csDangerBadge').textContent = danger + ' 危险客户';
+  document.getElementById('alertBadge').textContent = alerts + ' 待处理';
+}
+
+// ─── TODAY ───
+function renderTodayTasks(){
+  const active = DATA.tasks.filter(t=>t.status==='active'||t.status==='blocked').slice(0,5);
+  if(active.length===0){document.getElementById('todayTaskList').innerHTML='<div class="empty"><div class="empty-icon">✅</div>今日无待办</div>';return;}
+  document.getElementById('todayTaskList').innerHTML = active.map(t=>taskCardHTML(t)).join('');
+}
+
+function renderTodayAlerts(){
+  const active = DATA.alerts.filter(a=>a.status==='active'||a.status==='monitoring').slice(0,3);
+  if(active.length===0){document.getElementById('todayAlertList').innerHTML='<div class="empty"><div class="empty-icon">✅</div>暂无异常</div>';return;}
+  document.getElementById('todayAlertList').innerHTML = active.map(a=>alertCardHTML(a)).join('');
+}
+
+function renderMilestones(){
+  document.getElementById('todayMilestones').innerHTML = DATA.milestones.map(m=>{
+    const dotClass = m.status==='done'?'done':m.status==='active'?'active':'pending';
+    const dateStr = m.date.slice(5).replace('-','/');
+    return `<div class="milestone"><div class="m-dot ${dotClass}"></div><div class="m-label">${m.name}</div><div class="m-date">${dateStr}</div></div>`;
+  }).join('');
+}
+
+function renderDecisions(){
+  const recent = DATA.decisions.slice(0,3);
+  if(recent.length===0){document.getElementById('todayDecisionList').innerHTML='<div class="empty"><div class="empty-icon">📝</div>暂无决策记录</div>';return;}
+  document.getElementById('todayDecisionList').innerHTML = recent.map(d=>`
+    <div class="decision-card">
+      <div class="dc-header">
+        <span class="dc-date">${d.date.slice(5).replace('-','/')}</span>
+        <div class="dc-title">${d.title}</div>
+      </div>
+      <div class="dc-desc">${d.desc}</div>
+      <div class="dc-owner">决策人：${d.owner}</div>
+    </div>
+  `).join('');
+}
+
+// ─── TASKS ───
+function taskCardHTML(t){
+  const checked = t.status==='done'?'done':'';
+  const blocked = t.status==='blocked'?'blocked':'';
+  const high = t.priority==='high'&&t.status!=='done'?'high-priority':'';
+  const statusLabel = {done:'已完成',active:'进行中',blocked:'已阻塞',pending:'待启动'}[t.status];
+  const statusClass = {done:'badge-green',active:'badge-blue',blocked:'badge-red',pending:'badge-gray'}[t.status];
+  const wfColor = WORKFLOW_COLORS[t.workflow]||'var(--text-dim)';
+  const isOverdue = t.date && t.date < todayStr() && t.status !== 'done';
+  return `<div class="task-card ${checked} ${blocked} ${high}">
+    <div class="tc-left">
+      <div class="tc-check ${checked}" onclick="toggleTask('${t.id}')" title="点击完成">${t.status==='done'?'✓':''}</div>
+      <div class="tc-text">
+        <div class="tc-name ${checked}">${t.name}</div>
+        <div class="tc-meta">
+          <span style="color:${wfColor};font-size:10px">● ${WORKFLOW_NAMES[t.workflow]||t.workflow}</span>
+          ${t.owner!=='K'?' · '+t.owner:''}
+          ${isOverdue?' · <span style="color:var(--red)">已逾期</span>':''}
+        </div>
+      </div>
+    </div>
+    <span class="tc-status ${statusClass}">${statusLabel}</span>
+    <span class="tc-date" style="${isOverdue?'color:var(--red)':''}">${t.date?t.date.slice(5).replace('-','/'):'无日期'}</span>
+  </div>`;
+}
+
+function renderTasks(){
+  let tasks = [...DATA.tasks];
+  if(currentFilter==='active') tasks=tasks.filter(t=>t.status==='active');
+  else if(currentFilter==='blocked') tasks=tasks.filter(t=>t.status==='blocked');
+  else if(currentFilter==='done') tasks=tasks.filter(t=>t.status==='done');
+  else if(currentFilter==='mine') tasks=tasks.filter(t=>t.owner==='K');
+  if(tasks.length===0){document.getElementById('taskList').innerHTML='<div class="empty"><div class="empty-icon">📋</div>暂无任务</div>';return;}
+  document.getElementById('taskList').innerHTML = tasks.map(t=>taskCardHTML(t)).join('');
+}
+
+function filterTasks(f){
+  currentFilter=f;
+  document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===f));
+  renderTasks();
+}
+
+// ─── WEEK ───
+function renderWeekView(){
+  document.getElementById('weekTaskList').innerHTML = DATA.tasks.map(t=>taskCardHTML(t)).join('');
+}
+
+// ─── MILESTONE ───
+function renderMilestonePanel(){
+  const msData = DATA.milestones.map((m,i)=>({name:m.name,progress:m.status==='done'?100:m.status==='active'?50:0}));
+  const msLabels = DATA.milestones.map(m=>m.name);
+  const done = DATA.milestones.filter(m=>m.status==='done').length;
+  const pct = Math.round(done/DATA.milestones.length*100);
+
+  if(window._cMs) window._cMs.destroy();
+  window._cMs = new Chart(document.getElementById('cMilestone'),{
+    type:'bar',
+    data:{labels:msLabels,datasets:[{label:'完成度%',data:msData.map(d=>d.progress),backgroundColor:'rgba(79,142,247,0.7)',borderColor:'#4f8ef7',borderWidth:1,borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+'%'}}},scales:{x:{max:100,grid:{color:'rgba(37,45,64,0.8)'},ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}}}
+  });
+
+  document.getElementById('milestoneList').innerHTML = DATA.milestones.map(m=>`
+    <div class="task-card ${m.status==='done'?'done':''}">
+      <div class="tc-left">
+        <div class="tc-check ${m.status==='done'?'done':''}" onclick="toggleMilestone('${m.id}')">${m.status==='done'?'✓':''}</div>
+        <div class="tc-text">
+          <div class="tc-name ${m.status==='done'?'done':''}">${m.name}</div>
+          <div class="tc-meta">目标日期：${m.date}</div>
+        </div>
+      </div>
+      <span class="tc-status ${m.status==='done'?'badge-green':m.status==='active'?'badge-blue':'badge-gray'}">${m.status==='done'?'已完成':m.status==='active'?'进行中':'待启动'}</span>
+      <span class="tc-date">${m.date.slice(5).replace('-','/')}</span>
+    </div>
+  `).join('');
+}
+
+// ─── CS ───
+function renderCS(){
+  const danger = DATA.csClients.filter(c=>c.tier==='danger');
+  const warning = DATA.csClients.filter(c=>c.tier==='warning');
+  const healthy = DATA.csClients.filter(c=>c.tier==='healthy');
+
+  if(window._cCSHealth) window._cCSHealth.destroy();
+  window._cCSHealth = new Chart(document.getElementById('cCSHealth'),{
+    type:'doughnut',
+    data:{labels:['健康','关注','危险'],datasets:[{data:[healthy.length,warning.length,danger.length],backgroundColor:['#34c759','#f5a623','#ff453a'],borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:10}}}}
+  });
+
+  if(window._cCSTrend) window._cCSTrend.destroy();
+  window._cCSTrend = new Chart(document.getElementById('cCSTrend'),{
+    type:'line',
+    data:{labels:['第1周','第2周','第3周','第4周'],datasets:[{label:'均值',data:[78,82,81,84],borderColor:'#4f8ef7',backgroundColor:'rgba(79,142,247,0.1)',fill:true,tension:.4,borderWidth:2,pointRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(37,45,64,0.8)'}},y:{min:60,max:100,grid:{color:'rgba(37,45,64,0.8)'}}}}
+  });
+
+  document.getElementById('csDangerList').innerHTML = danger.map(c=>csRowHTML(c)).join('');
+  document.getElementById('csFullList').innerHTML = DATA.csClients.map(c=>csRowHTML(c)).join('');
+}
+
+function csRowHTML(c){
+  const healthColor = c.tier==='danger'?'var(--red)':c.tier==='warning'?'var(--yellow)':'var(--green)';
+  const trendIcon = c.trend>0?'↑':'↓';
+  const trendColor = c.trend>0?'var(--green)':c.trend<0?'var(--red)':'var(--text-dim)';
+  const signalBadge = {强:'badge-green','中':'badge-blue','弱':'badge-red','待观察':'badge-gray'}[c.signal]||'badge-gray';
+  return `<div class="task-card ${c.tier==='danger'?'blocked':''}" style="padding:12px 16px">
+    <div class="tc-left">
+      <div class="tc-text">
+        <div class="tc-name">${c.name}</div>
+        <div class="tc-meta">最近：${c.lastActivity} · ${c.owner}负责 · ${c.renewal}到期</div>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <div class="score" style="color:${healthColor}">${c.health}</div>
+      <div class="trend" style="color:${trendColor}">${trendIcon} ${Math.abs(c.trend)}</div>
+    </div>
+    <span class="tc-status ${signalBadge}">${c.signal}信号</span>
+  </div>`;
+}
+
+// ─── OUTSOURCE ───
+function renderOutsource(){
+  document.getElementById('outsourceList').innerHTML = DATA.outsource.map(o=>`
+    <div class="outsource-card">
+      <div class="oc-header">
+        <div class="oc-name">${o.name}</div>
+        <span class="badge ${o.status==='good'?'badge-green':o.status==='warning'?'badge-yellow':'badge-red'}">${o.status==='good'?'良好':o.status==='warning'?'⚠ 关注':'异常'}</span>
+      </div>
+      <div class="oc-grid">
+        <div class="oc-stat"><div class="ocs-label">月产能</div><div class="ocs-val">${o.capacity}单</div></div>
+        <div class="oc-stat"><div class="ocs-label">当前工单</div><div class="ocs-val">${o.used}单</div></div>
+        <div class="oc-stat"><div class="ocs-label">利用率</div><div class="ocs-val" style="color:${o.util>85?'var(--red)':o.util>75?'var(--yellow)':'var(--green)'}">${o.util}%</div></div>
+        <div class="oc-stat"><div class="ocs-label">质检分</div><div class="ocs-val" style="color:${o.quality<80?'var(--red)':o.quality<85?'var(--yellow)':'var(--green)'}">${o.quality}%</div></div>
+      </div>
+      <div class="oc-score-row">
+        <div class="oc-score">
+          <div class="ocs-label">质量</div>
+          <div class="ocs-bar"><div class="fill" style="width:${o.quality}%;background:${o.quality<80?'var(--red)':o.quality<85?'var(--yellow)':'var(--green)'}"></div></div>
+        </div>
+        <div class="oc-score">
+          <div class="ocs-label">响应</div>
+          <div class="ocs-bar"><div class="fill" style="width:${o.response}%;background:${o.response<75?'var(--red)':o.response<85?'var(--yellow)':'var(--green)'}"></div></div>
+        </div>
+        <div class="oc-score">
+          <div class="ocs-label">配合</div>
+          <div class="ocs-bar"><div class="fill" style="width:${o.cooperation}%;background:${o.cooperation<75?'var(--red)':o.cooperation<85?'var(--yellow)':'var(--green)'}"></div></div>
+        </div>
+      </div>
+      ${o.notes?`<div style="font-size:11px;color:var(--text-dim);margin-top:10px;padding:8px;background:var(--surface2);border-radius:6px">📝 ${o.notes}</div>`:''}
+    </div>
+  `).join('');
+}
+
+// ─── CERT ─�════════════════════════════════
+function renderCert(){
+  document.getElementById('certList').innerHTML = DATA.certLevels.map(l=>`
+    <div class="task-card">
+      <div class="tc-left">
+        <div class="tc-text">
+          <div class="tc-name">${l.name}</div>
+          <div class="tc-meta">${l.desc}</div>
+        </div>
+      </div>
+      <div style="width:120px">
+        <div class="prog"><div class="fill" style="width:${l.progress}%;background:var(--accent)"></div></div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:4px">${l.progress}% 完成</div>
+      </div>
+      <span class="tc-status badge-${l.status==='ready'?'green':l.status==='dev'?'yellow':'gray'}">${l.status==='ready'?'就绪':l.status==='dev'?'开发中':'规划'}</span>
+    </div>
+  `).join('');
+}
+
+// ─── ALERTS ───
+function alertCardHTML(a){
+  const cls = a.severity;
+  const icon = {critical:'!',warning:'⚠',info:'i'}[a.severity];
+  const statusLabel = {active:'处理中',monitoring:'监控中',resolved:'已解决'}[a.status];
+  const statusCls = {active:'badge-red',monitoring:'badge-yellow',resolved:'badge-green'}[a.status];
+  const dateStr = a.date.slice(5).replace('-','/');
+  return `<div class="alert-card ${cls}">
+    <div class="ac-header">
+      <div class="ac-icon">${icon}</div>
+      <div class="ac-title">${a.title}</div>
+      <span class="badge badge-${cls==='critical'?'red':cls==='warning'?'yellow':'blue'}">${a.severity==='critical'?'严重':a.severity==='warning'?'警告':'通知'}</span>
+      <span class="tc-status ${statusCls}" style="margin-left:4px">${statusLabel}</span>
+    </div>
+    <div class="ac-desc">${a.desc}</div>
+    <div class="ac-meta">
+      <span>👤 ${a.owner}</span>
+      <span>📅 ${dateStr}</span>
+    </div>
+    ${a.action?`<div style="padding:8px;background:var(--surface2);border-radius:6px;font-size:12px;color:var(--text-dim);margin-bottom:8px">→ ${a.action}</div>`:''}
+    ${a.status!=='resolved'?`<div class="ac-actions">
+      <button class="ac-action resolve" onclick="resolveAlert('${a.id}')">✓ 已解决</button>
+      ${a.status!=='monitoring'?'<button class="ac-action monitor" onclick="monitorAlert(\''+a.id+'\')">👁 监控中</button>':''}
+      <button class="ac-action escalate" onclick="escalateAlert('${a.id}')">⬆ 升级</button>
+    </div>`:''}
+  </div>`;
+}
+
+function renderAlerts(){
+  let alerts = [...DATA.alerts];
+  if(currentAlertFilter==='critical') alerts=alerts.filter(a=>a.severity==='critical');
+  else if(currentAlertFilter==='warning') alerts=alerts.filter(a=>a.severity==='warning');
+  else if(currentAlertFilter==='resolved') alerts=alerts.filter(a=>a.status==='resolved');
+  if(alerts.length===0){document.getElementById('alertList').innerHTML='<div class="empty"><div class="empty-icon">✅</div>暂无异常</div>';return;}
+  document.getElementById('alertList').innerHTML = alerts.map(a=>alertCardHTML(a)).join('');
+}
+
+function filterAlerts(f){
+  currentAlertFilter=f;
+  document.querySelectorAll('[data-afilter]').forEach(b=>b.classList.toggle('active',b.dataset.afilter===f));
+  renderAlerts();
+}
+
+// ═══════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════
+function toggleTask(id){
+  const t = DATA.tasks.find(t=>t.id===id);
+  if(!t) return;
+  t.status = t.status==='done'?'active':'done';
+  save();
+  render();
+}
+
+function toggleMilestone(id){
+  const m = DATA.milestones.find(m=>m.id===id);
+  if(!m) return;
+  m.status = m.status==='done'?'pending':'done';
+  save();
+  renderMilestonePanel();
+  renderMilestones();
+  updateCounters();
+}
+
+function resolveAlert(id){
+  const a = DATA.alerts.find(a=>a.id===id);
+  if(!a) return;
+  a.status='resolved';
+  save();
+  render();
+}
+function monitorAlert(id){
+  const a = DATA.alerts.find(a=>a.id===id);
+  if(!a) return;
+  a.status='monitoring';
+  save();
+  render();
+}
+function escalateAlert(id){
+  const a = DATA.alerts.find(a=>a.id===id);
+  if(!a) return;
+  a.severity='critical';
+  a.status='active';
+  save();
+  render();
+}
+
+function addTask(){
+  const name = document.getElementById('t-name').value.trim();
+  if(!name){alert('任务名称不能为空');return;}
+  const id = 't'+Date.now();
+  DATA.tasks.push({
+    id,name,
+    workflow:document.getElementById('t-workflow').value,
+    owner:document.getElementById('t-owner').value,
+    date:document.getElementById('t-date').value,
+    priority:document.getElementById('t-priority').value,
+    status:'active',
+    desc:document.getElementById('t-desc').value.trim()
+  });
+  save();closeModal();render();
+  showToast('✅ 任务已添加');
+}
+
+function addAlert(){
+  const title = document.getElementById('a-title').value.trim();
+  if(!title){alert('异常标题不能为空');return;}
+  const id = 'a'+Date.now();
+  DATA.alerts.push({
+    id,title,
+    severity:document.getElementById('a-severity').value,
+    owner:document.getElementById('a-owner').value.trim()||'待分配',
+    date:todayStr(),
+    status:'active',
+    desc:document.getElementById('a-desc').value.trim(),
+    action:document.getElementById('a-action').value.trim()
+  });
+  save();closeModal();render();
+  showToast('🚨 异常已记录');
+}
+
+function addDecision(){
+  const title = document.getElementById('d-title').value.trim();
+  if(!title){alert('决策标题不能为空');return;}
+  const id = 'd'+Date.now();
+  DATA.decisions.unshift({
+    id,title,
+    owner:document.getElementById('d-owner').value.trim()||'K',
+    date:document.getElementById('d-date').value||todayStr(),
+    desc:document.getElementById('d-desc').value.trim()
+  });
+  save();closeModal();render();
+  showToast('⚖️ 决策已记录');
+}
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});
+  const a = document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='amy-cmd-'+todayStr()+'.json';a.click();
+}
+
+function importData(){
+  const json = document.getElementById('import-json').value.trim();
+  try{
+    const parsed = JSON.parse(json);
+    DATA = parsed;save();closeModal();render();
+    showToast('📥 数据已导入');
+  }catch(e){alert('JSON格式错误：'+e.message);}
+}
+
+function resetData(){
+  if(!confirm('确定重置？所有数据将恢复为示例数据。'))return;
+  DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  save();render();
+  showToast('🗑 已重置');
+}
+
+// ═══════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════
+function switchPanel(name){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.panel===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>switchPanel(btn.dataset.panel));
+});
+
+// ═══════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════
+function openModal(id){
+  document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
+  document.getElementById('modal-'+id).style.display='block';
+  document.getElementById('modal-overlay').classList.add('show');
+  if(id==='addTask') document.getElementById('t-date').value=todayStr();
+  if(id==='addDecision') document.getElementById('d-date').value=todayStr();
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function todayStr(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function showToast(msg){
+  const t = document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface3);border:1px solid var(--accent);color:var(--text-bright);padding:10px 20px;border-radius:20px;font-size:13px;z-index:999;animation:fadeInOut 2s forwards';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2000);
+}
+
+// ─── CLOCK ───
 function updateClock(){
   const n=new Date();
-  document.getElementById('curTime').textContent=
-    n.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('curDate').textContent=n.toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('curWeekday').textContent=['周日','周一','周二','周三','周四','周五','周六'][n.getDay()];
+  document.getElementById('hudDate').textContent=n.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})+'日';
 }
-updateClock(); setInterval(updateClock,10000);
+updateClock();
 
-// ── Nav ──
-document.querySelectorAll('.nav-item').forEach(el=>{
-  el.addEventListener('click',()=>{
-    document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById(el.dataset.panel+'-panel').classList.add('active');
+// ─── WEEK CHARTS ───
+function renderWeekCharts(){
+  if(window._cWeekTasks) window._cWeekTasks.destroy();
+  window._cWeekTasks = new Chart(document.getElementById('cWeekTasks'),{
+    type:'bar',
+    data:{
+      labels:['周一','周二','周三','周四','周五','周六','周日'],
+      datasets:[{
+        label:'完成任务',data:[2,1,3,1,0,0,0],
+        backgroundColor:'rgba(79,142,247,0.7)',borderColor:'#4f8ef7',borderWidth:1,borderRadius:4
+      },{
+        label:'新增任务',data:[1,2,0,2,0,0,0],
+        backgroundColor:'rgba(52,199,89,0.7)',borderColor:'#34c759',borderWidth:1,borderRadius:4
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12,padding:10}}},scales:{x:{grid:{color:'rgba(37,45,64,0.8)'}},y:{grid:{color:'rgba(37,45,64,0.8)'},ticks:{stepSize:1}}}}
   });
-});
 
-// ── Sub-tabs ──
-document.querySelectorAll('.sub-tab').forEach(el=>{
-  el.addEventListener('click',()=>{
-    el.closest('.sub-tabs').querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
-    el.parentElement.querySelectorAll('.sub-panel').forEach(p=>p.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById('sub-'+el.dataset.sub).classList.add('active');
+  if(window._cWeekAlerts) window._cWeekAlerts.destroy();
+  window._cWeekAlerts = new Chart(document.getElementById('cWeekAlerts'),{
+    type:'doughnut',
+    data:{labels:['已解决','处理中','监控中'],datasets:[{data:[2,1,1],backgroundColor:['#34c759','#ff453a','#f5a623'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:10}}}}
   });
-});
+}
 
-// ── Charts ──
-const FONT_COLOR = '#5a6478';
-Chart.default.color = FONT_COLOR;
-Chart.default.font.family = 'system-ui, sans-serif';
-
-const c1 = new Chart(document.getElementById('c1'),{
-  type:'bar',
-  data:{
-    labels:['5月','6月','7月','8月','9月','10月'],
-    datasets:[{
-      label:'整体进度%',
-      data:[15,42,68,82,95,100],
-      backgroundColor:'rgba(79,142,247,0.7)',
-      borderColor:'#4f8ef7',
-      borderWidth:1,
-      borderRadius:4
-    },{
-      label:'CS中台',
-      data:[30,65,90,100,100,100],
-      backgroundColor:'rgba(52,199,89,0.7)',
-      borderColor:'#34c759',
-      borderWidth:1,
-      borderRadius:4
-    },{
-      label:'外包管理',
-      data:[20,55,80,95,100,100],
-      backgroundColor:'rgba(245,166,35,0.7)',
-      borderColor:'#f5a623',
-      borderWidth:1,
-      borderRadius:4
-    }]
-  },
-  options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{position:'top',labels:{boxWidth:12,padding:16}},
-             tooltip:{mode:'index',intersect:false}},
-    scales:{x:{grid:{color:'rgba(37,45,64,0.8)'},stacked:false},
-            y:{max:100,grid:{color:'rgba(37,45,64,0.8)'},
-               ticks:{callback:v=>v+'%'}}}}
-});
-
-const cHealth = new Chart(document.getElementById('cHealth'),{
-  type:'doughnut',
-  data:{
-    labels:['健康(≥80)','关注(60-79)','危险(<60)'],
-    datasets:[{data:[189,47,11],backgroundColor:['#34c759','#f5a623','#ff453a'],borderWidth:0,hoverOffset:8}]
-  },
-  options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
-    plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:12}}}}
-});
-
-const cOutsource = new Chart(document.getElementById('cOutsource'),{
-  type:'radar',
-  data:{
-    labels:['产能','质量','响应','配合','价格','稳定性'],
-    datasets:[{
-      label:'北京外包A组',
-      data:[88,85,92,90,75,88],
-      backgroundColor:'rgba(52,199,89,0.15)',
-      borderColor:'#34c759',pointBackgroundColor:'#34c759',
-      borderWidth:2,pointRadius:4
-    },{
-      label:'长沙外包B组',
-      data:[72,78,70,72,80,65],
-      backgroundColor:'rgba(245,166,35,0.15)',
-      borderColor:'#f5a623',pointBackgroundColor:'#f5a623',
-      borderWidth:2,pointRadius:4
-    }]
-  },
-  options:{responsive:true,maintainAspectRatio:false,
-    scales:{r:{grid:{color:'rgba(37,45,64,0.8)'},angleLines:{color:'rgba(37,45,64,0.8)'},
-              pointLabels:{color:'#c4ccd8',font:{size:11}},min:0,max:100,ticks:{stepSize:20,display:false}}}}
-});
-
-// ── Timeline Render ──
-const workstreams = [
-  {name:'CS中台搭建',owner:'K',start:'5/28',end:'6/13',progress:45,cls:'blue',status:'进行中'},
-  {name:'外包SOP落地',owner:'K',start:'5/28',end:'6/6',progress:60,cls:'blue',status:'进行中'},
-  {name:'质检体系搭建',owner:'待定',start:'6/3',end:'6/20',progress:10,cls:'yellow',status:'即将启动'},
-  {name:'认证体系设计',owner:'待定',start:'6/10',end:'7/4',progress:5,cls:'gray',status:'待启动'},
-  {name:'试点客户验证',owner:'CS-李明',start:'6/20',end:'7/18',progress:0,cls:'gray',status:'待启动'},
-  {name:'渠道培训认证',owner:'待定',start:'7/4',end:'8/1',progress:0,cls:'gray',status:'待启动'},
-];
-const tl = document.getElementById('timeline');
-workstreams.forEach(ws=>{
-  tl.innerHTML+=`<div class="timeline-item">
-    <div class="tl-left">
-      <div class="tl-name">${ws.name}</div>
-      <div class="tl-owner">👤 ${ws.owner}</div>
-    </div>
-    <div class="tl-right">
-      <div class="tl-bar-wrap">
-        <div class="tl-bar ${ws.cls}">${ws.progress}%</div>
-        <div class="prog" style="flex:1"><div class="prog-fill ${ws.cls==='blue'?'b':ws.cls==='yellow'?'y':ws.cls==='green'?'g':ws.cls==='red'?'r':'b'}" style="width:${ws.progress}%"></div></div>
-      </div>
-      <div class="tl-meta">
-        <span>📅 ${ws.start} → ${ws.end}</span>
-        <span style="color:${ws.status==='进行中'?'var(--accent)':ws.status==='已阻塞'?'var(--red)':'var(--text-dim)'}">${ws.status}</span>
-      </div>
-    </div>
-  </div>`;
-});
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+Chart.default.color = '#5a6478';
+Chart.default.font.family = 'system-ui,sans-serif';
+render();
+renderWeekCharts();
 </script>
 </body>
 </html>
