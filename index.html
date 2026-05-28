@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>AIMI交付体系 · 指挥官中心 v3</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -312,9 +313,36 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   .sidebar{display:none;}
   .hud-items{flex-direction:column;}
 }
+
+/* ═══════════════════════ PASSWORD GATE ═══════════════════════ */
+.pw-overlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.pw-overlay.hidden{display:none}
+.pw-logo{font-size:18px;font-weight:700;color:var(--text-bright);letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+.pw-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+.pw-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px 28px;width:360px;max-width:90vw}
+.pw-box h2{font-size:15px;font-weight:600;color:var(--text-bright);margin-bottom:4px}
+.pw-box .sub{font-size:12px;color:var(--text-dim);margin-bottom:20px}
+.pw-input{width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-bright);font-size:14px;outline:none;transition:border-color .2s;font-family:var(--font)}
+.pw-input:focus{border-color:var(--accent)}
+.pw-btn{width:100%;margin-top:12px;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:filter .15s;font-family:var(--font)}
+.pw-btn:hover{filter:brightness(1.15)}
+.pw-err{color:var(--red);font-size:12px;margin-top:8px;display:none;text-align:center}
+.pw-err.show{display:block}
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════════ PASSWORD GATE ═══════════════════════ -->
+<div class="pw-overlay" id="pwGate">
+  <div class="pw-logo"><span class="dot"></span>AIMI 交付指挥中心</div>
+  <div class="pw-box">
+    <h2>🔐 访问验证</h2>
+    <div class="sub">请输入密码以继续</div>
+    <input type="password" class="pw-input" id="pwInput" placeholder="输入密码" autofocus onkeydown="if(event.key==='Enter')checkPw()">
+    <button class="pw-btn" onclick="checkPw()">验证进入</button>
+    <div class="pw-err" id="pwErr">密码错误，请重试</div>
+  </div>
+</div>
 
 <!-- ─── TOPBAR ─── -->
 <div class="topbar">
@@ -1332,6 +1360,31 @@ function renderWeekCharts(){
     data:{labels:['已解决','处理中','监控中'],datasets:[{data:[2,1,1],backgroundColor:['#34c759','#ff453a','#f5a623'],borderWidth:0}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:10}}}}
   });
+}
+
+// ═══════════════════════════════════════════
+// PASSWORD GATE
+// ═══════════════════════════════════════════
+const PW_HASH = '4bcfc3491baef0be71b526d9843ca747bf8541908dbc7f63d73f5740e8f74acf';
+
+async function sha256(m){const e=new TextEncoder().encode(m);const d=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+
+async function checkPw(){
+  const input = document.getElementById('pwInput').value;
+  const hash = await sha256(input);
+  if(hash === PW_HASH){
+    document.getElementById('pwGate').classList.add('hidden');
+    sessionStorage.setItem('amy_auth','1');
+  }else{
+    document.getElementById('pwErr').classList.add('show');
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+    setTimeout(()=>document.getElementById('pwErr').classList.remove('show'),2000);
+  }
+}
+
+if(sessionStorage.getItem('amy_auth')==='1'){
+  document.getElementById('pwGate').classList.add('hidden');
 }
 
 // ═══════════════════════════════════════════
