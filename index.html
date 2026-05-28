@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>艾米交付驾驶舱</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #131820;
+    --surface2: #1a1f2b;
+    --border: #242b38;
+    --text: #c8ccd4;
+    --text-dim: #6c7280;
+    --accent: #58a6ff;
+    --accent-glow: rgba(88,166,255,0.15);
+    --green: #3fb950;
+    --green-glow: rgba(63,185,80,0.15);
+    --yellow: #d2991d;
+    --yellow-glow: rgba(210,153,29,0.15);
+    --red: #f85149;
+    --red-glow: rgba(248,81,73,0.15);
+    --purple: #a371f7;
+    --radius: 10px;
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 17px; letter-spacing: -0.3px;
+  }
+  .header-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .header-meta { font-size: 12px; color: var(--text-dim); display: flex; gap: 16px; align-items: center; }
+  .header-meta .live { color: var(--green); display: flex; align-items: center; gap: 5px; }
+  .header-meta .live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+  }
+  .tab {
+    padding: 12px 20px;
+    font-size: 13px; font-weight: 500;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+    letter-spacing: -0.2px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Content */
+  .content { padding: 20px 24px; max-width: 1440px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* KPI Cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .kpi-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+  .kpi-value { font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
+  .kpi-sub { font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 4px; }
+  .kpi-sub .up { color: var(--green); }
+  .kpi-sub .down { color: var(--red); }
+  .kpi-sub .warn { color: var(--yellow); }
+
+  /* Chart Grid */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .chart-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.2px; }
+  .chart-wrap { position: relative; width: 100%; height: 240px; }
+  .chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
+  /* Table */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .table-card .chart-title { padding: 18px 20px 0; }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  th { text-align: left; padding: 10px 20px; color: var(--text-dim); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 20px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: var(--green-glow); color: var(--green); }
+  .badge-yellow { background: var(--yellow-glow); color: var(--yellow); }
+  .badge-red { background: var(--red-glow); color: var(--red); }
+  .badge-blue { background: var(--accent-glow); color: var(--accent); }
+
+  /* Progress */
+  .progress-bar {
+    width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px;
+  }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width .6s; }
+  .progress-fill.green { background: var(--green); }
+  .progress-fill.yellow { background: var(--yellow); }
+  .progress-fill.red { background: var(--red); }
+  .progress-fill.blue { background: var(--accent); }
+
+  /* Alert Log */
+  .alert-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 20px; border-bottom: 1px solid var(--border);
+  }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .alert-icon.critical { background: var(--red-glow); color: var(--red); }
+  .alert-icon.warning { background: var(--yellow-glow); color: var(--yellow); }
+  .alert-icon.info { background: var(--accent-glow); color: var(--accent); }
+  .alert-body { flex: 1; }
+  .alert-title { font-size: 13px; font-weight: 600; }
+  .alert-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .alert-time { font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+
+  /* Status dot */
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .status-dot.online { background: var(--green); }
+  .status-dot.warn { background: var(--yellow); }
+  .status-dot.offline { background: var(--red); }
+
+  /* Section header */
+  .section-title {
+    font-size: 14px; font-weight: 700; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px; letter-spacing: -0.2px;
+  }
+  .section-title .count { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .content { padding: 12px; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .chart-grid { grid-template-columns: 1fr; }
+    .tabs {overflow-x: auto; padding: 0 12px;}
+    .tab { padding: 12px 14px; font-size: 12px; white-space: nowrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <span class="dot"></span> 艾米交付驾驶舱
+  </div>
+  <div class="header-meta">
+    <span class="live">系统运行中</span>
+    <span>数据更新：<span id="updateTime">--</span></span>
+    <span>v1.0</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="overview">总览</div>
+  <div class="tab" data-tab="cs">客户成功</div>
+  <div class="tab" data-tab="outsource">外包管理</div>
+  <div class="tab" data-tab="cert">认证体系</div>
+  <div class="tab" data-tab="alert">异常中心</div>
+</div>
+
+<div class="content">
+
+  <!-- ===== 总览 ===== -->
+  <div class="tab-panel active" id="panel-overview">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">服务客户总数</div>
+        <div class="kpi-value" style="color:var(--accent)">247</div>
+        <div class="kpi-sub"><span class="up">↑ 12</span> 本月新增</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">客户健康分均值</div>
+        <div class="kpi-value" style="color:var(--green)">84</div>
+        <div class="kpi-sub"><span class="up">↑ 3</span> vs 上月</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">外包产能利用率</div>
+        <div class="kpi-value" style="color:var(--yellow)">76%</div>
+        <div class="kpi-sub">警戒线 85%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">本月待处理异常</div>
+        <div class="kpi-value" style="color:var(--red)">3</div>
+        <div class="kpi-sub"><span class="down">需关注</span></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">客户增长趋势（近6个月）</div>
+        <div class="chart-wrap"><canvas id="chartCustomerTrend"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">交付质量概览</div>
+        <div class="chart-wrap"><canvas id="chartQuality"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">本周异常摘要</div>
+        <div style="margin-top:8px">
+          <div class="alert-item">
+            <div class="alert-icon warning">⚠</div>
+            <div class="alert-body"><div class="alert-title">长沙外包质检分下降</div><div class="alert-desc">本周抽样合格率降至78%，触发关注线</div></div>
+            <div class="alert-time">5/27</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon critical">!</div>
+            <div class="alert-body"><div class="alert-title">客户健康分危险 — 深圳XX科技</div><div class="alert-desc">健康分跌至52，CS已介入</div></div>
+            <div class="alert-time">5/26</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon info">i</div>
+            <div class="alert-body"><div class="alert-title">渠道首批10个客户分配完成</div><div class="alert-desc">已路由至北京外包A组</div></div>
+            <div class="alert-time">5/25</div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">客户分级分布</div>
+        <div class="chart-wrap"><canvas id="chartTiers"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 客户成功 ===== -->
+  <div class="tab-panel" id="panel-cs">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">健康客户</div>
+        <div class="kpi-value" style="color:var(--green)">189</div>
+        <div class="kpi-sub">76% · 健康分≥80</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">关注客户</div>
+        <div class="kpi-value" style="color:var(--yellow)">47</div>
+        <div class="kpi-sub">19% · 健康分60-79</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">危险客户</div>
+        <div class="kpi-value" style="color:var(--red)">11</div>
+        <div class="kpi-sub">5% · 健康分&lt;60</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">本月续费率</div>
+        <div class="kpi-value" style="color:var(--accent)">91%</div>
+        <div class="kpi-sub"><span class="up">↑ 4%</span> vs 上月</div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="chart-title">⚠ 需要关注的客户</div>
+      <table>
+        <thead><tr><th>客户</th><th>健康分</th><th>趋势</th><th>问题</th><th>负责人</th><th>行动</th></tr></thead>
+        <tbody>
+          <tr><td>深圳XX科技</td><td><span class="badge badge-red">52</span></td><td>↓ 18</td><td>ROI连续3周未达标</td><td>张明</td><td>本周QBR</td></tr>
+          <tr><td>杭州YY电商</td><td><span class="badge badge-yellow">61</span></td><td>↓ 8</td><td>产品使用频次下降</td><td>李婷</td><td>主动联系</td></tr>
+          <tr><td>广州ZZ贸易</td><td><span class="badge badge-yellow">58</span></td><td>↓ 12</td><td>客户侧人员变动</td><td>张明</td><td>重新Onboarding</td></tr>
+          <tr><td>成都AA跨境</td><td><span class="badge badge-yellow">65</span></td><td>→</td><td>素材审核多次不通过</td><td>王磊</td><td>素材培训</td></tr>
+          <tr><td>武汉BB科技</td><td><span class="badge badge-red">44</span></td><td>↓ 22</td><td>未使用产品超2周</td><td>李婷</td><td>挽留SOP</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== 外包管理 ===== -->
+  <div class="tab-panel" id="panel-outsource">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">总产能</div>
+        <div class="kpi-value" style="color:var(--accent)">180</div>
+        <div class="kpi-sub">客户/月</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">当前分配</div>
+        <div class="kpi-value" style="color:var(--yellow)">137</div>
+        <div class="kpi-sub">利用率 76%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">本月质检合格率</div>
+        <div class="kpi-value" style="color:var(--green)">87%</div>
+        <div class="kpi-sub"><span class="warn">↓ 2%</span> vs 上月</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">飞行检查</div>
+        <div class="kpi-value">0</div>
+        <div class="kpi-sub">本月重大事故</div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">外包商品质对比</div>
+        <div class="chart-wrap"><canvas id="chartVendor"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">产能使用趋势</div>
+        <div class="chart-wrap"><canvas id="chartCapacity"></canvas></div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="chart-title">外包商状态</div>
+      <table>
+        <thead><tr><th>外包商</th><th>等级</th><th>总产能</th><th>已分配</th><th>利用率</th><th>质检分</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td><span class="status-dot online"></span>北京艾迪</td><td><span class="badge badge-green">S</span></td><td>100</td><td>78</td><td>78%<div class="progress-bar"><div class="progress-fill blue" style="width:78%"></div></div></td><td>92</td><td><span class="badge badge-green">正常</span></td></tr>
+          <tr><td><span class="status-dot warn"></span>长沙网拓</td><td><span class="badge badge-yellow">A</span></td><td>80</td><td>59</td><td>74%<div class="progress-bar"><div class="progress-fill blue" style="width:74%"></div></div></td><td>78</td><td><span class="badge badge-yellow">关注</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== 认证体系 ===== -->
+  <div class="tab-panel" id="panel-cert">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">累计持证人数</div>
+        <div class="kpi-value" style="color:var(--accent)">38</div>
+        <div class="kpi-sub"><span class="up">↑ 6</span> 本月新增</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">认证通过率</div>
+        <div class="kpi-value" style="color:var(--green)">72%</div>
+        <div class="kpi-sub">本年度累计</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">待年审</div>
+        <div class="kpi-value" style="color:var(--yellow)">12</div>
+        <div class="kpi-sub">3个月内到期</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">渠道认证申请</div>
+        <div class="kpi-value" style="color:var(--purple)">24</div>
+        <div class="kpi-sub">集团渠道待培训</div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">认证层级分布</div>
+        <div class="chart-wrap"><canvas id="chartCertLevel"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">认证增长趋势</div>
+        <div class="chart-wrap"><canvas id="chartCertTrend"></canvas></div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="chart-title">渠道认证进度</div>
+      <table>
+        <thead><tr><th>渠道方</th><th>报名</th><th>培训中</th><th>已考试</th><th>持证</th><th>进度</th></tr></thead>
+        <tbody>
+          <tr><td>集团华南区</td><td>12</td><td>8</td><td>4</td><td>3</td><td><div class="progress-bar"><div class="progress-fill green" style="width:25%"></div></div><span style="font-size:11px;color:var(--text-dim)">25%</span></td></tr>
+          <tr><td>集团华东区</td><td>8</td><td>5</td><td>3</td><td>2</td><td><div class="progress-bar"><div class="progress-fill blue" style="width:25%"></div></div><span style="font-size:11px;color:var(--text-dim)">25%</span></td></tr>
+          <tr><td>集团华北区</td><td>4</td><td>4</td><td>0</td><td>0</td><td><div class="progress-bar"><div class="progress-fill yellow" style="width:0%"></div></div><span style="font-size:11px;color:var(--text-dim)">0%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== 异常中心 ===== -->
+  <div class="tab-panel" id="panel-alert">
+    <div class="kpi-grid">
+      <div class="kpi-card" style="border-color:var(--red)">
+        <div class="kpi-label">严重</div>
+        <div class="kpi-value" style="color:var(--red)">1</div>
+        <div class="kpi-sub">需立即处理</div>
+      </div>
+      <div class="kpi-card" style="border-color:var(--yellow)">
+        <div class="kpi-label">警告</div>
+        <div class="kpi-value" style="color:var(--yellow)">3</div>
+        <div class="kpi-sub">24h内处理</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">本月已关闭</div>
+        <div class="kpi-value" style="color:var(--green)">17</div>
+        <div class="kpi-sub">平均响应 3.2h</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">重复异常率</div>
+        <div class="kpi-value" style="color:var(--accent)">6%</div>
+        <div class="kpi-sub"><span class="up">↓ 2%</span> 趋势向好</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="chart-title">全部异常记录</div>
+      <table>
+        <thead><tr><th>级别</th><th>时间</th><th>来源</th><th>描述</th><th>状态</th><th>负责人</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-red">严重</span></td><td>5/26 14:30</td><td>客户成功</td><td>深圳XX科技 健康分52 流失预警</td><td><span class="badge badge-red">处理中</span></td><td>张明</td></tr>
+          <tr><td><span class="badge badge-yellow">警告</span></td><td>5/27 09:15</td><td>质检</td><td>长沙外包 质检合格率跌至78%</td><td><span class="badge badge-yellow">处理中</span></td><td>王磊</td></tr>
+          <tr><td><span class="badge badge-yellow">警告</span></td><td>5/25 16:00</td><td>产能</td><td>北京外包利用率达85% 触发预警</td><td><span class="badge badge-green">已关闭</span></td><td>王磊</td></tr>
+          <tr><td><span class="badge badge-yellow">警告</span></td><td>5/24 11:20</td><td>客户成功</td><td>武汉BB科技 14天未登录产品</td><td><span class="badge badge-red">处理中</span></td><td>李婷</td></tr>
+          <tr><td><span class="badge badge-red">严重</span></td><td>5/22 08:45</td><td>品质</td><td>北京外包 广告误操作导致客户损失</td><td><span class="badge badge-green">已关闭</span></td><td>张明</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+  });
+});
+
+// Time
+document.getElementById('updateTime').textContent = new Date().toLocaleString('zh-CN');
+
+// Chart.js defaults
+Chart.defaults.color = '#6c7280';
+Chart.defaults.borderColor = '#242b38';
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+Chart.defaults.font.size = 11;
+
+// Customer trend
+new Chart(document.getElementById('chartCustomerTrend'), {
+  type: 'line',
+  data: {
+    labels: ['12月','1月','2月','3月','4月','5月'],
+    datasets: [{
+      label: '总客户数', data: [180,192,200,215,235,247],
+      borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,0.08)',
+      fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: '#58a6ff',
+      borderWidth: 2
+    },{
+      label: '渠道来源', data: [0,0,5,12,20,35],
+      borderColor: '#a371f7', backgroundColor: 'rgba(163,113,247,0.05)',
+      fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: '#a371f7',
+      borderWidth: 2
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { boxWidth: 12, padding: 20 } } },
+    scales: { y: { beginAtZero: false, min: 150, grid: { color: '#1a1f2b' } }, x: { grid: { display: false } } }
+  }
+});
+
+// Quality overview
+new Chart(document.getElementById('chartQuality'), {
+  type: 'bar',
+  data: {
+    labels: ['操作规范','交付时效','客户满意度','数据准确'],
+    datasets: [{
+      label: '当前', data: [88,92,85,90],
+      backgroundColor: ['#58a6ff','#3fb950','#a371f7','#d2991d'],
+      borderRadius: 4
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { min: 60, max: 100, grid: { color: '#1a1f2b' } }, x: { grid: { display: false } } }
+  }
+});
+
+// Client tiers
+new Chart(document.getElementById('chartTiers'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Tier 1 大客户','Tier 2 标准','Tier 3 自助'],
+    datasets: [{ data: [28,164,55], backgroundColor: ['#58a6ff','#3fb950','#242b38'], borderWidth: 0 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 16 } } }
+  }
+});
+
+// Vendor comparison
+new Chart(document.getElementById('chartVendor'), {
+  type: 'bar',
+  data: {
+    labels: ['操作规范','交付时效','客户满意','数据准确','综合'],
+    datasets: [
+      { label: '北京艾迪', data: [94,90,92,91,92], backgroundColor: '#58a6ff', borderRadius: 4 },
+      { label: '长沙网拓', data: [80,85,72,82,78], backgroundColor: '#d2991d', borderRadius: 4 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { boxWidth: 10, padding: 16 } } },
+    scales: { y: { min: 50, max: 100, grid: { color: '#1a1f2b' } }, x: { grid: { display: false } } }
+  }
+});
+
+// Capacity
+new Chart(document.getElementById('chartCapacity'), {
+  type: 'line',
+  data: {
+    labels: ['W1','W2','W3','W4','W5','W6','W7','W8'],
+    datasets: [
+      { label: '北京利用率', data: [72,75,78,80,82,85,80,78], borderColor: '#58a6ff', tension: .3, borderWidth: 2, pointRadius: 2 },
+      { label: '长沙利用率', data: [65,68,70,72,74,76,74,74], borderColor: '#d2991d', tension: .3, borderWidth: 2, pointRadius: 2 },
+      { label: '警戒线', data: [85,85,85,85,85,85,85,85], borderColor: '#f85149', borderDash: [5,5], borderWidth: 1, pointRadius: 0 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { boxWidth: 10, padding: 16 } } },
+    scales: { y: { min: 50, max: 100, grid: { color: '#1a1f2b' } }, x: { grid: { display: false } } }
+  }
+});
+
+// Cert levels
+new Chart(document.getElementById('chartCertLevel'), {
+  type: 'bar',
+  data: {
+    labels: ['L1 投放师','L2 CS经理','L3 培训师'],
+    datasets: [{ label: '持证', data: [22,12,4], backgroundColor: ['#58a6ff','#a371f7','#3fb950'], borderRadius: 4 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { x: { grid: { color: '#1a1f2b' } }, y: { grid: { display: false } } }
+  }
+});
+
+// Cert trend
+new Chart(document.getElementById('chartCertTrend'), {
+  type: 'line',
+  data: {
+    labels: ['12月','1月','2月','3月','4月','5月'],
+    datasets: [{
+      label: '累计持证', data: [10,15,20,24,32,38],
+      borderColor: '#a371f7', backgroundColor: 'rgba(163,113,247,0.08)',
+      fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: '#a371f7',
+      borderWidth: 2
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { min: 0, grid: { color: '#1a1f2b' } }, x: { grid: { display: false } } }
+  }
+});
+</script>
+</body>
+</html>
